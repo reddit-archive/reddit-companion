@@ -34,6 +34,7 @@ function scrapeThingInfo(thing) {
   
   info.domain = thing.querySelector('.domain > a').innerText
   info.is_self = info.domain == ('self.' + info.subreddit)
+  info.wasClosed = false
   
   console.log('Scraped info from page:', info)
   return info

@@ -92,7 +92,8 @@ $(document).ready(function() {
   })
 
   $('#close').click(function() {
-    msgJSON({action:'close'})
+	port.postMessage({action:'close', url:info.url})
+	msgJSON({action:'close'})
   })
   
   if (localStorage['showTooltips'] == 'false') {

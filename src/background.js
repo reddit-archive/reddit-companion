@@ -64,6 +64,7 @@ redditInfo = {
           redditInfo.modhash = resp.data.modhash
           if (resp.data.children.length) {
             var info = resp.data.children[0].data
+            info.wasClosed = false
             redditInfo.setURL(info.url, info)
             barStatus.updateInfo(info)
           }
@@ -289,7 +290,9 @@ barStatus = {
         console.log('Modifying', msg)
         redditInfo[msg.action](barData.fullname, updateAfter)
         break
-      }
+      case 'close':
+        redditInfo.url[msg.url].wasClosed = true
+    }
   }
 }
 
@@ -395,6 +398,11 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
   switch (request.action) {
     case 'thingClick':
       console.log('Thing clicked', request)
+
+      if (info = redditInfo.getURL(request.url)) {
+        request.info.wasClosed = info.wasClosed
+      }
+
       redditInfo.setURL(request.url, request.info)
       break
   }
@@ -414,7 +422,12 @@ chrome.extension.onConnect.addListener(function(port) {
           console.log('Ignoring self post', info)
         } else {
           console.log('Recognized page '+tab.url, info)
-          tabStatus.showInfo(tab.id, info.name)
+          if (info.wasClosed) {
+          console.log('Bar was closed on this page. Ignoring.', info)
+          }
+          else {
+            tabStatus.showInfo(tab.id, info.name)
+          }
         }
       }
       break
