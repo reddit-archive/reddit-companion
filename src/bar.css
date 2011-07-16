@@ -1,6 +1,6 @@
 body { margin:0; font-family:sans-serif; -webkit-user-select:none; width:100%; }
 
-button, .liked button#upvote:active, .disliked button#downvote:active, .saved button#save:active { height:20px; vertical-align:middle; margin:5px 2px; padding:2px 6px; border-radius:5px; background:-webkit-linear-gradient(90deg, #ddd, #fff); border:none; box-shadow:0 0 3px rgba(0,0,0,.75); }
+button, .liked button#upvote:active, .disliked button#downvote:active, .saved button#save:active { height:20px; vertical-align:middle; margin:5px 2px; padding:2px 6px; border-radius:5px; background:-webkit-linear-gradient(90deg, #ddd, #fff); border:none; box-shadow:0 0 3px rgba(0,0,0,.75); cursor:pointer; }
 button:active, .liked button#upvote, .disliked button#downvote, .saved button#save { background:-webkit-linear-gradient(90deg, #eee, #ddd); box-shadow:0 0 5px rgba(0,0,0,1); }
 .liked button#upvote { box-shadow:0 0 3px rgba(0,0,0,.75), 0 0 4px 1px #FF8B60; }
 .disliked button#downvote { box-shadow:0 0 3px rgba(0,0,0,.75), 0 0 4px 1px #857DFF; }

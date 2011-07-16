@@ -1,0 +1,48 @@
+html, body {
+margin:0;
+font-family:sans-serif;
+color:#222;
+}
+#container {
+margin-left:auto;
+margin-right:auto;
+width:475px;
+background:url('images/shine-128.png') #f1f1f1 no-repeat;
+min-height: 118px;
+text-align:center;
+margin-top:200px;
+border-radius:5px;
+padding:5px;
+}
+label {
+display: inline-block;
+padding-left: 15px;
+text-indent: -15px;
+font-weight:bold;
+cursor:pointer;
+}
+input[type="checkbox"] {
+width: 13px;
+height: 13px;
+padding: 0;
+margin:0;
+vertical-align: bottom;
+position: relative;
+top: -3px;
+cursor:pointer;
+}
+table#config {
+width:347px;
+float:right;
+text-align:left;
+border-spacing:0;
+}
+td.option {
+width:50px;
+text-align:center;
+}
+table#config th {
+text-align:center;
+font-size:1.5em;
+border-bottom:1px solid #dedede;
+}

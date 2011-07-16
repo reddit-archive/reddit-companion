@@ -2,6 +2,7 @@
   "name": "reddit companion",
   "version": "1.0.2",
   "description": "Turn your browser into a redditor's best friend.",
+  "options_page": "options.html",
   "permissions": [
     "tabs",
     "notifications",
