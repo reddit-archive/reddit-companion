@@ -153,7 +153,7 @@ redditInfo = {
 
   url: {}, 
   fullname: {},
-  lastMailCheckTime: null,
+  lastMailCheckTime: null
 }
 
 tabStatus = {
