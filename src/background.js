@@ -382,7 +382,10 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
   switch (request.action) {
     case 'thingClick':
       console.log('Thing clicked', request)
-      redditInfo.setURL(request.url, request.info)
+      if (request.info.domain == "self." + request.info.subreddit) {
+        console.log("Ignoring self post", request.info)
+      }
+      else redditInfo.setURL(request.url, request.info)
       break
   }
 })

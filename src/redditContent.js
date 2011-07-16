@@ -57,10 +57,6 @@ function thingClicked(e) {
 
   // Scrape the metadata.
   var info = scrapeThingInfo(el);
-  if (info.domain == "self." + info.subreddit) {
-    console.log("Ignoring self post.", info)
-    return
-  }
   if (info) {
     chrome.extension.sendRequest({action:'thingClick', url:a.href, info:info})
   }
