@@ -153,7 +153,7 @@ redditInfo = {
 
   url: {}, 
   fullname: {},
-  lastMailCheckTime: null,
+  lastMailCheckTime: null
 }
 
 tabStatus = {
@@ -218,6 +218,7 @@ tabStatus = {
 
 barStatus = {
   fullname: {},
+  hidden: {},
 
   add: function(port, fullname) {
     var barData = {port:port, fullname:fullname}
@@ -226,6 +227,9 @@ barStatus = {
       this.fullname[fullname] = []
     }
     this.fullname[fullname].push(barData)
+    if (this.hidden[barData.fullname]) {
+      delete this.hidden[barData.fullname]
+    }
     port.onMessage.addListener(this.handleCommand.bind(this, barData))
     port.onDisconnect.addListener(this.remove.bind(this, barData))
     tabStatus.addBar(port.sender.tab.id, barData)
@@ -289,7 +293,10 @@ barStatus = {
         console.log('Modifying', msg)
         redditInfo[msg.action](barData.fullname, updateAfter)
         break
-      }
+      case 'close':
+        this.hidden[barData.fullname] = true
+        break
+    }
   }
 }
 
@@ -412,6 +419,8 @@ chrome.extension.onConnect.addListener(function(port) {
       if (info) {
         if (localStorage['ignoreSelfPosts'] == 'true' && info.is_self) {
           console.log('Ignoring self post', info)
+        } else if (barStatus.hidden[info.name]) {
+          console.log('Bar was closed on this page. Ignoring.', barStatus.hidden, info)
         } else {
           console.log('Recognized page '+tab.url, info)
           tabStatus.showInfo(tab.id, info.name)

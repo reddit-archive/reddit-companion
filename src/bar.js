@@ -92,6 +92,7 @@ $(document).ready(function() {
   })
 
   $('#close').click(function() {
+    port.postMessage({action:'close'})
     msgJSON({action:'close'})
   })
   
