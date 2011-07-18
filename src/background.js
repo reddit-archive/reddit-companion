@@ -1,7 +1,8 @@
 function initOptions() {
   defaultOptions = {
     'showTooltips': true,
-    'ignoreSelfPosts': false
+    'ignoreSelfPosts': false,
+    'allowHttps': false
   }
 
   for (key in defaultOptions) {
@@ -353,7 +354,8 @@ mailNotifier = {
 }
 
 function setPageActionIcon(tab) {
-  if (/^https?:\/\/.*/.test(tab.url)) {
+  var pattern = (localStorage['allowHttps'] == 'true') ? /^https?:\/\/.*/ : /^http:\/\/.*/
+  if (pattern.test(tab.url)) {
     var info = redditInfo.url[tab.url]
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
@@ -412,6 +414,8 @@ chrome.extension.onConnect.addListener(function(port) {
       if (info) {
         if (localStorage['ignoreSelfPosts'] == 'true' && info.is_self) {
           console.log('Ignoring self post', info)
+        } else if (/^https:\/\/.*/.test(tab.url) && (localStorage['allowHttps'] == 'false')) {
+          console.log('Https page. Ignoring', info)
         } else {
           console.log('Recognized page '+tab.url, info)
           tabStatus.showInfo(tab.id, info.name)
