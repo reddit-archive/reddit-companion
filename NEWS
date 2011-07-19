@@ -1,3 +1,6 @@
+== Version 1.1.0 ==
+* Remember closed bars and do not auto-show them. [mhweaver]
+
 == Version 1.0.3 ==
 * Add options page. [sc0tt]
 * Add button tooltips which can be toggled on/off. [sc0tt]
