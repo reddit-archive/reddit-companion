@@ -35,6 +35,8 @@ function scrapeThingInfo(thing) {
   info.domain = thing.querySelector('.domain > a').innerText
   info.is_self = info.domain == ('self.' + info.subreddit)
   
+  info._ts = pageTimestamp
+
   console.log('Scraped info from page:', info)
   return info
 }
@@ -65,6 +67,21 @@ function thingClicked(e) {
 
 // Capture click events to catch link clicks before the reddit toolbar link mangler gets them.
 document.addEventListener('mousedown', thingClicked, true)
+
+// FIXME: Crazy hacks to figure out the time the page was requested.
+// We need to know when the page was actually fetched from reddit's servers to
+// invalidate old data. It would be nice to put a timestamp in the reddit DOM
+// or figure out a simpler way to get a reliable request timestamp for the
+// page.
+pageTimestamp = (function() {
+  var nav = performance.navigation,
+      freshData = nav.type == nav.TYPE_NAVIGATE || nav.type == nav.TYPE_RELOAD
+  if (freshData || !sessionStorage._ts) {
+    return sessionStorage._ts = Date.now()
+  } else {
+    return parseInt(sessionStorage._ts, 10)
+  }
+})()
 
 console.log('Shine reddit content handler running.')
 

@@ -13,13 +13,26 @@ function initOptions() {
 }
 
 redditInfo = {
+  freshAgeThreshold: 5*60,
+
+  url: {},
+  fullname: {},
+  fetching: {},
+
   getURL: function(url) {
     return this.url[url]
   },
   
   setURL: function(url, info) {
-    this.url[url] = info
-    this.fullname[info.name] = info
+    info._ts = info._ts || Date.now()
+    var stored = this.fullname[info.name]
+    if (!stored || stored._ts < info._ts) {
+      this.url[url] = info
+      this.fullname[info.name] = info
+      console.log('Stored reddit info for', url, info)
+    } else {
+      console.log('Received info not newer than stored info. Did not store.', stored, info)
+    }
   },
 
   request: function(options) {
@@ -33,7 +46,7 @@ redditInfo = {
       url: 'http://www.reddit.com/api/me.json',
       success: function(resp) {
         if (resp.data) {
-          console.log('Updated reddit info', resp.data)
+          console.log('Updated reddit user data', resp.data)
           this.storeModhash(resp.data.modhash)
           callback(resp.data)
         }
@@ -62,47 +75,71 @@ redditInfo = {
       data: params,
       success: function(resp) {
         if (resp.data) {
-          redditInfo.modhash = resp.data.modhash
+          this.storeModhash(resp.data.modhash)
           if (resp.data.children.length) {
             var info = resp.data.children[0].data
-            redditInfo.setURL(info.url, info)
+            this.setURL(info.url, info)
             barStatus.updateInfo(info)
+            callback(info)
+          } else {
+            callback(false, resp)
           }
-          if (callback) { callback(info) }
         }
-      },
-      error: function() {
-        if (callback) { callback(null) }
-      }
+      }.bind(this),
+      error: function() { callback(false) }
     })
   },
-
-  lookupURL: function(url, callback) {
-    this._queryInfo({url:url}, callback)
-  },
-
-
-  lookupName: function(name, callback) {
-    this._queryInfo({id:name}, callback)
-  },
-
-  _storedLookup: function(key, array, lookup, callback) {
-    var stored = array[key]
+  
+  _storedLookup: function(keyName, key, array, useStored, callback) {
+    // Internal rate limited cached info getter.
+    //
+    // Look up `key` from `array` and call `callback` with the stored data immediately if
+    // `useStored` is true and stored info is available. If stored data is
+    // currently in the process of being refreshed or it is older than
+    // redditInfo.freshAgeThreshold seconds old, `callback` is invoked with
+    // null. Otherwise, the data is fetched from reddit and `callback` is
+    // invoked with the result.
+    var stored = array[key],
+        storedAge = 0,
+        now = Date.now()
     if (stored) {
-      // Return our stored data right away, refreshing in the background.
-      callback(stored)
-      lookup(key)
-    } else {
-      lookup(key, callback)
+      if (useStored) {
+        // Return our stored data right away.
+        callback(stored)
+      }
+
+      if (this.fetching[stored.name]) {
+        console.log('Info already being fetched. Skipping update.', stored)
+        callback(null)
+        return false
+      }
+    
+      storedAge = Math.floor((now - stored._ts) / 1000)
+      if (storedAge < redditInfo.freshAgeThreshold) {
+        console.log('Info is', storedAge, 'seconds old. Skipping update.', stored)
+        callback(null)
+        return false
+      }
+
+      // Mark that we are fetching the data from reddit
+      this.fetching[stored.name] = true
     }
+
+    var queryParams = {age:storedAge}
+    queryParams[keyName] = key
+    this._queryInfo(queryParams, function() {
+      if (stored) { delete this.fetching[stored.name] }
+      callback.apply(null, arguments)
+    }.bind(this))
+    return true
   },
 
-  lookupURLStored: function(url, callback) {
-    this._storedLookup(url, this.url, this.lookupURL.bind(this), callback)
+  lookupURL: function(url, useStored, callback) {
+    this._storedLookup('url', url, this.url, useStored, callback)
   },
 
-  lookupNameStored: function(name, callback) {
-    this._storedLookup(name, this.fullname, this.lookupName.bind(this), callback)
+  lookupName: function(name, useStored, callback) {
+    this._storedLookup('id', name, this.fullname, useStored, callback)
   },
 
   _thingAction: function(action, data, callback) {
@@ -150,11 +187,7 @@ redditInfo = {
     
   storeModhash: function(modhash) {
     localStorage['modhash'] = this.modhash = modhash
-  },
-
-  url: {}, 
-  fullname: {},
-  lastMailCheckTime: null,
+  }
 }
 
 tabStatus = {
@@ -246,8 +279,8 @@ barStatus = {
   },
 
   update: function(barData, stored) {
-    var lookup = stored ? 'lookupNameStored' : 'lookupName'
-    redditInfo[lookup](barData.fullname, function(info) {
+    redditInfo.lookupName(barData.fullname, stored, function(info) {
+      if (!info) { return }
       console.log('Updating bar', barData)
       barData.port.postMessage({
         action: 'update',
@@ -356,7 +389,7 @@ mailNotifier = {
 function setPageActionIcon(tab) {
   var pattern = (localStorage['allowHttps'] == 'true') ? /^https?:\/\/.*/ : /^http:\/\/.*/
   if (pattern.test(tab.url)) {
-    var info = redditInfo.url[tab.url]
+    var info = redditInfo.getURL(tab.url)
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
     } else { 
@@ -378,7 +411,7 @@ function onActionClicked(tab) {
     frame = (frame + 1) % 6
   }, 200)
   
-  redditInfo.lookupURLStored(tab.url, function(info) {
+  redditInfo.lookupURL(tab.url, true, function(info) {
     window.clearInterval(workingAnimation)
     setPageActionIcon(tab)
     
