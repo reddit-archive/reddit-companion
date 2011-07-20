@@ -1,5 +1,8 @@
 == Version 1.1.0 ==
+* Add option to enable/disable bar auto-show. [chromakode]
+* Add option to enable/disable mail notifications. [chromakode]
 * Remember closed bars and do not auto-show them. [mhweaver]
+* Use 16x16 icon for extension pages. [chromakode]
 
 == Version 1.0.3 ==
 * Add options page. [sc0tt]

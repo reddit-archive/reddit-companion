@@ -1,7 +1,9 @@
 function initOptions() {
   defaultOptions = {
+    'autoShow': true,
+    'autoShowSelf': true,
     'showTooltips': true,
-    'ignoreSelfPosts': false,
+    'checkMail': true,
     'allowHttps': false
   }
 
@@ -16,7 +18,15 @@ redditInfo = {
   freshAgeThreshold: 5*60,
 
   url: {},
-  fullname: {},
+  fullname: {
+    _shine_demo: {
+      title: 'companion bar',
+      score: '\u221e',
+      num_comments: '7',
+      likes: true,
+      _fake: true
+    }
+  },
   fetching: {},
 
   getURL: function(url) {
@@ -48,7 +58,7 @@ redditInfo = {
         if (resp.data) {
           console.log('Updated reddit user data', resp.data)
           this.storeModhash(resp.data.modhash)
-          callback(resp.data)
+          if (callback) { callback(resp.data) }
         }
       }.bind(this),
       error: function() { callback(false) }
@@ -108,6 +118,11 @@ redditInfo = {
       if (useStored) {
         // Return our stored data right away.
         callback(stored)
+      }
+
+      if (stored._fake) {
+        console.log('Skipping fake info request.')
+        return false
       }
 
       if (this.fetching[stored.name]) {
@@ -284,6 +299,7 @@ barStatus = {
 
   update: function(barData, stored) {
     redditInfo.lookupName(barData.fullname, stored, function(info) {
+      if (info == null) { return }
       console.log('Updating bar', barData)
       barData.port.postMessage({
         action: 'update',
@@ -381,7 +397,7 @@ mailNotifier = {
     }
 
     var n = this.notification =
-      webkitNotifications.createNotification('images/reddit_mail_icon.svg', title, text)
+      webkitNotifications.createNotification('images/reddit-mail.svg', title, text)
 
     this.notification.onclick = function() {
       window.open('http://www.reddit.com/message/unread/')
@@ -389,6 +405,35 @@ mailNotifier = {
     }
 
     this.notification.show()
+  }
+}
+
+mailChecker = {
+  checkInterval: 5*60*1000,
+
+  interval: null,
+  start: function() {
+    if (!this.interval) {
+      console.log('Starting periodic mail check.')
+      this.interval = window.setInterval(this.check, this.checkInterval)
+      this.check()
+    }
+  },
+  stop: function() {
+    if (this.interval) {
+      console.log('Stopping periodic mail check.')
+      window.clearInterval(this.interval)
+      this.interval = null
+    }
+  },
+  check: function() {
+    redditInfo.update(function(info) {
+      if (info.has_mail) {
+        redditInfo.fetchMail(mailNotifier.notify.bind(mailNotifier))
+      } else {
+        mailNotifier.clear()
+      }
+    })
   }
 }
 
@@ -463,7 +508,9 @@ chrome.extension.onConnect.addListener(function(port) {
       var tab = port.sender.tab,
           info = setPageActionIcon(tab)
       if (info) {
-        if (localStorage['ignoreSelfPosts'] == 'true' && info.is_self) {
+        if (localStorage['autoShow'] == 'false') {
+          console.log('Auto-show disabled. Ignoring reddit page', info)
+        } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
           console.log('Ignoring self post', info)
         } else if (/^https:\/\/.*/.test(tab.url) && (localStorage['allowHttps'] == 'false')) {
           console.log('Https page. Ignoring', info)
@@ -481,6 +528,16 @@ chrome.extension.onConnect.addListener(function(port) {
   }
 })
 
+window.addEventListener('storage', function(e) {
+  if (e.key == 'checkMail') {
+    if (e.newValue == 'true') {
+      mailChecker.start()
+    } else {
+      mailChecker.stop()
+    }
+  }
+}, false)
+
 // Show page action for existing tabs.
 function setAllPageActionIcons() {
   chrome.windows.getAll({populate:true}, function(wins) {
@@ -492,19 +549,13 @@ function setAllPageActionIcons() {
     })
   })
 }
-function checkMail() {
-  redditInfo.update(function(info) {
-    if (info.has_mail) {
-      redditInfo.fetchMail(mailNotifier.notify.bind(mailNotifier))
-    } else {
-      mailNotifier.clear()
-    }
-  })
-}
 
 initOptions()
 console.log('Shine loaded.')
 redditInfo.init()
-window.setInterval(checkMail, 5*60*1000)
 setAllPageActionIcons()
-checkMail()
+if (localStorage['checkMail'] == 'true') {
+  mailChecker.start()
+} else {
+  redditInfo.update()
+}

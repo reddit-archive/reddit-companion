@@ -28,15 +28,20 @@ function toggleSaved() {
 }
 
 function update() {
-  $('#title')
-    .text(info.title)
-    .attr('href', 'http://reddit.com'+info.permalink)
-  fitHeight()
+  initButtons()
 
+  $('#title').text(info.title)
+  
   if (loggedIn) {
     $('#bar').removeClass('logged-out').addClass('logged-in')
   } else {
     $('#bar').removeClass('logged-in').addClass('logged-out')
+  }
+
+  fitHeight()
+
+  if (info.permalink) {
+    $('#title').attr('href', 'http://reddit.com'+info.permalink)
   }
 
   if (info.likes == true) {
@@ -68,9 +73,8 @@ function update() {
   $('#comments span').text(info.num_comments)
 }
 
-$(document).ready(function() {
-  $(window).resize(fitHeight)
-
+function initButtons() {
+  if (buttonsReady || info._fake) { return }
   $('#comments').click(function(e) {
     clickOpenURL(e, 'http://reddit.com'+info.permalink)
   })
@@ -95,12 +99,18 @@ $(document).ready(function() {
     port.postMessage({action:'close'})
     msgJSON({action:'close'})
   })
-  
+
+  buttonsReady = true
+}
+
+$(document).ready(function() {
   if (localStorage['showTooltips'] == 'false') {
     $('#bar *[title]').removeAttr('title')
   }
+  $(window).resize(fitHeight)
 })
 
+buttonsReady = false
 fullname = window.location.hash.substr(1)
 port = chrome.extension.connect({name:'bar:'+fullname})
 port.onMessage.addListener(function(msg) {

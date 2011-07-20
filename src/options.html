@@ -2,18 +2,41 @@
 <html>
   <head>
     <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="utils.js"></script>
     <script type="text/javascript" src="options.js"></script>
     <link href="options.css" type="text/css" rel="stylesheet" />
+    <link href="pageOverlay.css" type="text/css" rel="stylesheet" />
     <title>reddit companion options</title>
   </head>
   <body>
   <div id="container">
     <h1><img src="/images/shine.svg" alt="logo"/>reddit companion options</h1>
-    <ul id="options">
-      <li><input type="checkbox" id="showTooltips"> <label for="showTooltips">show tooltips on buttons</label></li>
-      <li><input type="checkbox" id="ignoreSelfPosts"> <label for="ignoreSelfPosts">do not auto-display the bar on self posts</label></li>
-      <li><input type="checkbox" id="allowHttps"> <label for="allowHttps">enable companion on https pages</label>
-    </ul>
+    <div id="contents">
+      <section class="bar">
+        <shinebar><iframe src="bar.html#_shine_demo"></iframe></shinebar>
+        <div class="options">
+          <ul>
+            <li><input type="checkbox" id="autoShow"> <label for="autoShow">display automatically after clicking links on reddit</label></li>
+            <li><input type="checkbox" id="autoShowSelf"> <label for="autoShowSelf">display when viewing self posts</label></li>
+            <li><input type="checkbox" id="showTooltips"> <label for="showTooltips">show tooltips on buttons</label></li>
+            <li><input type="checkbox" id="allowHttps"> <label for="allowHttps">enable companion on https pages</label>
+          </ul>
+        </div>
+      </section>
+      <section class="notifications">
+      <div class="notification-demo">
+          <img class="close" src="/images/close.svg"></img>
+          <strong>companion: sample message</strong>
+          <span class="message">i accidentally a javascript</span>
+        </div>
+        <div class="options">
+          <ul>
+            <li><input type="checkbox" id="checkMail"> <label for="checkMail">display new message notifications</label></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+    <p>Want to help decide on new features? Join <a href="http://www.reddit.com/r/companion/">/r/companion</a>.</p>
   </div>
   </body>
 </html>

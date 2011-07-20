@@ -1,8 +1,23 @@
 html, body { margin:0; font-family:sans-serif; color:#222; }
-#container { margin-left:auto; margin-right:auto; width:450px; background: #f1f1f1; margin-top:200px; border-radius:5px; padding:20px; }
-h1 { text-align:center; font-size:1.5em; margin:0; border-bottom:1px solid #dedede; }
-h1 > img { height:64px; padding:10px; vertical-align:middle; }
-#container > ul { padding:0; }
-#options li { list-style-type:none; }
-#options label { display: inline-block; font-weight:bold; cursor:pointer; }
-#options input[type="checkbox"] { cursor:pointer; }
+#container { margin-left:auto; margin-right:auto; width:500px; background: #f1f1f1; margin-top:200px; border:2px solid #bbb; border-radius:10px; padding:20px; -webkit-user-select:none; }
+h1 { text-align:center; font-size:1.5em; margin:0; margin-top:10px; }
+h1 > img { height:64px; padding-right:10px; vertical-align:middle; }
+#container > p { margin:0; }
+#container a { color:#777; }
+#contents { margin:1em 0; border:1px solid #dedede; border-left:0; border-right:0; }
+#contents > section { margin:2em 0; }
+section > .options { margin-top:.5em; padding-left:15px; }
+section > shinebar, section > .notification-demo { border-radius:5px; box-shadow: 0 1px 8px rgba(0,0,0,.75); }
+.notification-demo { position:relative; font-size:.8em; background:url(/images/reddit-mail.svg) white 10px 7px no-repeat; width:225px; padding:5px; padding-left:50px; }
+.notification-demo > .close { position:absolute; top:10px; right:10px; width:7px; height:7px; opacity:.5; }
+.notification-demo > strong { display:block; }
+.options ul { padding:0; margin:0; }
+.options button { margin:.5em 0; }
+.options li { list-style-type:none; }
+.options label { display: inline-block; font-weight:bold; cursor:pointer; }
+.options input[type="checkbox"] { cursor:pointer; }
+shinebar, .notification-demo, section li { -webkit-transition-property:opacity; -webkit-transition-duration:.15s; }
+#contents shinebar, #contents section.bar li { opacity:.5; }
+#contents.autoShow shinebar, #contents.autoShow section.bar li, #contents section.bar li:first-child { opacity:1; }
+#contents .notification-demo { opacity:.5; }
+#contents.checkMail .notification-demo { opacity:1; }
