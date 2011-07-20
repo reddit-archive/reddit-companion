@@ -5,5 +5,6 @@ $(document).ready(function() {
     })
     .click(function() {
       localStorage[this.id] = $(this).is(':checked')
+      chrome.extension.sendRequest({action: 'optionChange', id: this.id})
     })
 })

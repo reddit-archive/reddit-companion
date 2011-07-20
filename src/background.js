@@ -429,6 +429,15 @@ function onActionClicked(tab) {
   })
 }
 
+function handleOptionChange(id) {
+  switch (id) {
+    case 'allowHttps':
+      console.log('Https option changed')
+      setAllPageActionIcons()
+      break
+  }
+}
+
 chrome.tabs.onSelectionChanged.addListener(tabStatus.updateTab.bind(tabStatus))
 chrome.pageAction.onClicked.addListener(onActionClicked)
 
@@ -437,6 +446,9 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
     case 'thingClick':
       console.log('Thing clicked', request)
       redditInfo.setURL(request.url, request.info)
+      break
+    case 'optionChange':
+      handleOptionChange(request.id)
       break
   }
 })
@@ -470,14 +482,16 @@ chrome.extension.onConnect.addListener(function(port) {
 })
 
 // Show page action for existing tabs.
-chrome.windows.getAll({populate:true}, function(wins) {
-  wins.forEach(function(win) {
-    win.tabs.forEach(function(tab) {
-      setPageActionIcon(tab)
+function setAllPageActionIcons() {
+  chrome.windows.getAll({populate:true}, function(wins) {
+    wins.forEach(function(win) {
+      win.tabs.forEach(function(tab) {
+          chrome.pageAction.hide(tab.id)
+          setPageActionIcon(tab)
+      })
     })
   })
-})
-
+}
 function checkMail() {
   redditInfo.update(function(info) {
     if (info.has_mail) {
@@ -492,4 +506,5 @@ initOptions()
 console.log('Shine loaded.')
 redditInfo.init()
 window.setInterval(checkMail, 5*60*1000)
+setAllPageActionIcons()
 checkMail()
