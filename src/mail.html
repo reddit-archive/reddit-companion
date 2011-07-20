@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <style>
+            body { margin: 5px; font-family: verdana; cursor: pointer; }
+            td { font-size: 8pt; }
+            .userlink { text-decoration: none; cursor: pointer; color: blue; }
+        </style>
+    </head>
+    <body id="template">
+        <table cellspacing="0" cellpadding="0" style="width:100%" onclick="javascript:window.close();window.open('{context}');">
+            <tr>
+                <td valign="top"><img width="15px" src="images/reddit-mail.svg" /></td>
+                <td valign="top">
+                    Mail from <a class="userlink" target="_blank" onclick="javascript:window.open('http://www.reddit.com/user/{from}');evt.stopPropagation();"/><span id="from"></span></a><br/>
+                    <b><span id="subject"></span></b><br/>
+                    <br/>
+                    <span id="body"></span>
+                </td>
+            </tr>
+        </table>
+    </body>
+	<script src="jquery.js"></script>
+    <script>
+	var data = JSON.parse(window.location.hash.substr(1));
+	for(var k in data) {
+		var s = "" + data[k];
+		s = s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\n/g, '<br />');
+		$('#' + k).append(s);
+	}
+	</script>
+</html>

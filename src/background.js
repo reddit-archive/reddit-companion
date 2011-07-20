@@ -367,20 +367,35 @@ mailNotifier = {
 
     console.log('New messages: ', newCount, this.newCount)
 
-    var title, text
     if (newCount == 1) {
-      var message = messages[newIdx]
-      title = message.data.author + ': ' + message.data.subject
-      text = message.data.body
-    } else if (newCount > 1) {
-      title = 'reddit: new messages!'
-      text = 'You have ' + this.newCount + ' new messages.'
-    }
+        var data;
+        var message = messages[newIdx];
 
-    if (newCount > 0) {
-      this.showNotification(title, text)
-    }
+        if (message.data.was_comment == false) {
+            data = "mail.html#" + JSON.stringify({
+            from: message.data.author,
+            subject: message.data.subject,
+            body: message.data.body_html,
+            context: "http://www.reddit.com/message/unread/"
+        });
+       }
+
+        this.showRichNotification(data);
+    } else if (newCount > 1) {
+        title = 'reddit: new messages!'
+        text = 'You have ' + this.newCount + ' new messages.'
+        this.showNotification(title, text)
+        }
   },
+
+  showRichNotification: function(url) {
+        if (this.notification) {
+            this.notification.cancel()
+         }
+
+         var n = this.notification = webkitNotifications.createHTMLNotification(url);
+         this.notification.show()
+   },
 
   clear: function() {
     this.newCount = 0
