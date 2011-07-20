@@ -474,7 +474,7 @@ function onActionClicked(tab) {
   })
 }
 
-function handleOptionChange(id) {
+function handleOptionChange(id, value) {
   switch (id) {
     case 'allowHttps':
       console.log('Https option changed')
@@ -493,7 +493,7 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
       redditInfo.setURL(request.url, request.info)
       break
     case 'optionChange':
-      handleOptionChange(request.id)
+      handleOptionChange(request.id, request.value)
       break
   }
 })
