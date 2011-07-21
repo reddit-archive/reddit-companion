@@ -206,7 +206,8 @@ redditInfo = {
 
 tabStatus = {
   tabId: {},
-
+  deletedTabs: {},
+  
   add: function(port) {
     var tabId = port.sender.tab.id,
         tabData = {port:port}
@@ -225,6 +226,10 @@ tabStatus = {
   remove: function(tabId) {
     console.log('Tab removed', tabId)
     var fullname = this.tabId[tabId].fullname
+    if (this.deletedTabs[tabId]) {
+        console.log('Removed URL: ', this.deletedTabs[tabId].url)
+        this.deletedTabs[tabId].tab = this.tabId[tabId]
+    }
     delete this.tabId[tabId]
   },
 
@@ -367,35 +372,20 @@ mailNotifier = {
 
     console.log('New messages: ', newCount, this.newCount)
 
+    var title, text
     if (newCount == 1) {
-        var data;
-        var message = messages[newIdx];
-
-        if (message.data.was_comment == false) {
-            data = "mail.html#" + JSON.stringify({
-            from: message.data.author,
-            subject: message.data.subject,
-            body: message.data.body_html,
-            context: "http://www.reddit.com/message/unread/"
-        });
-       }
-
-        this.showRichNotification(data);
+      var message = messages[newIdx]
+      title = message.data.author + ': ' + message.data.subject
+      text = message.data.body
     } else if (newCount > 1) {
-        title = 'reddit: new messages!'
-        text = 'You have ' + this.newCount + ' new messages.'
-        this.showNotification(title, text)
-        }
+      title = 'reddit: new messages!'
+      text = 'You have ' + this.newCount + ' new messages.'
+    }
+
+    if (newCount > 0) {
+      this.showNotification(title, text)
+    }
   },
-
-  showRichNotification: function(url) {
-        if (this.notification) {
-            this.notification.cancel()
-         }
-
-         var n = this.notification = webkitNotifications.createHTMLNotification(url);
-         this.notification.show()
-   },
 
   clear: function() {
     this.newCount = 0
@@ -454,11 +444,19 @@ mailChecker = {
 function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
+
+    if (tabStatus.deletedTabs[tab.id] && (new Date().getTime() - tabStatus.deletedTabs[tab.id].ts) < 2500) {
+        info = redditInfo.getURL(tabStatus.deletedTabs[tab.id].url)
+        console.log('Tab revived with previous URL',tabStatus.deletedTabs[tab.id].url)
+        delete tabStatus.deletedTabs[tab.id]
+    }
+
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
-    } else { 
+    } else {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
     }
+    
     chrome.pageAction.show(tab.id)
     return info
   }
@@ -494,6 +492,8 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
   switch (request.action) {
     case 'thingClick':
       console.log('Thing clicked', request)
+      // this happens async so we're not touch tabStatus.tabId directly -- remove() might be called as we touch this
+      tabStatus.deletedTabs[sender.tab.id] = {"url": request.url, "ts": new Date().getTime()}
       redditInfo.setURL(request.url, request.info)
       break
   }
