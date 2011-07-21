@@ -207,11 +207,7 @@ redditInfo = {
 tabStatus = {
   tabId: {},
   deletedTabs: {},
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> 121b1c41c40f3ecc3311f84788806388516226ca
   add: function(port) {
     var tabId = port.sender.tab.id,
         tabData = {port:port}
@@ -449,11 +445,7 @@ function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
 
-<<<<<<< HEAD
     if (!info && tabStatus.deletedTabs[tab.id] && (new Date().getTime() - tabStatus.deletedTabs[tab.id].ts) < 2500) {
-=======
-    if (tabStatus.deletedTabs[tab.id] && (new Date().getTime() - tabStatus.deletedTabs[tab.id].ts) < 2500) {
->>>>>>> 121b1c41c40f3ecc3311f84788806388516226ca
         info = redditInfo.getURL(tabStatus.deletedTabs[tab.id].url)
         console.log('Tab revived with previous URL',tabStatus.deletedTabs[tab.id].url)
         delete tabStatus.deletedTabs[tab.id]
