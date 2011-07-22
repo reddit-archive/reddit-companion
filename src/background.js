@@ -3,7 +3,7 @@ function initOptions() {
     'autoShow': true,
     'autoShowSelf': true,
     'showTooltips': true,
-    'checkMail': true,
+    'checkMail': true
   }
 
   for (key in defaultOptions) {
@@ -12,11 +12,25 @@ function initOptions() {
     }
   }
 }
-
+function Info(url, info) {
+  this.init()
+  this.info = info
+  this.addURL(url)
+  console.log('New Info object instaniated', this)
+}
+Info.prototype = {
+  init: function() {
+    this.urlList = {}
+    this.info = {}
+  },
+  addURL: function(url) {
+    this.urlList[url] = url
+  }
+}
 redditInfo = {
   freshAgeThreshold: 5*60,
 
-  url: {},
+  urls: {}, // full of Info objects
   fullname: {
     _shine_demo: {
       title: 'companion bar',
@@ -29,14 +43,22 @@ redditInfo = {
   fetching: {},
 
   getURL: function(url) {
-    return this.url[url]
+    for (x in this.urls) {
+      if(this.urls[x].urlList[url]) {
+        return this.urls[x].info
+      }
+    }
+    return undefined
+  },
+  getFullname: function(name) {
+    return this.fullname[name]
   },
   
   setURL: function(url, info) {
     info._ts = info._ts || Date.now()
     var stored = this.fullname[info.name]
     if (!stored || stored._ts < info._ts) {
-      this.url[url] = info
+      this.urls[url] = new Info(url, info)
       this.fullname[info.name] = info
       console.log('Stored reddit info for', url, info)
     } else {
@@ -101,16 +123,16 @@ redditInfo = {
     })
   },
   
-  _storedLookup: function(keyName, key, array, useStored, callback) {
+  _storedLookup: function(keyName, key, accessor, useStored, callback) {
     // Internal rate limited cached info getter.
     //
-    // Look up `key` from `array` and call `callback` with the stored data immediately if
+    // Look up `key` using `accessor` and call `callback` with the stored data immediately if
     // `useStored` is true and stored info is available. If stored data is
     // currently in the process of being refreshed or it is older than
     // redditInfo.freshAgeThreshold seconds old, false is returned. Otherwise,
     // the data is fetched from reddit and `callback` is invoked with the
     // result.
-    var stored = array[key],
+    var stored = accessor.apply(this, [key]),
         storedAge = 0,
         now = Date.now()
     if (stored) {
@@ -149,11 +171,11 @@ redditInfo = {
   },
 
   lookupURL: function(url, useStored, callback) {
-    this._storedLookup('url', url, this.url, useStored, callback)
+    this._storedLookup('url', url, this.getURL, useStored, callback)
   },
 
   lookupName: function(name, useStored, callback) {
-    this._storedLookup('id', name, this.fullname, useStored, callback)
+    this._storedLookup('id', name, this.getFullname, useStored, callback)
   },
 
   _thingAction: function(action, data, callback) {
