@@ -9,7 +9,8 @@
     "http://*/*"
   ],
   "icons": {
-    "48" : "images/shine-48.png",
+    "16"  : "images/shine-16.png",
+    "48"  : "images/shine-48.png",
     "128" : "images/shine-128.png"
   },
   "page_action": {

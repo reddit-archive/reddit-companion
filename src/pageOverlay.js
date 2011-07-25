@@ -72,6 +72,7 @@ function removeBar() {
 
 window.addEventListener('message', function(e) {
   if (e.origin == chrome.extension.getURL('').slice(0, -1)) {
+    if (!shineBar) { return }
     var request = JSON.parse(e.data)
     console.log('Message received from bar iframe: ', request)
     switch (request.action) {

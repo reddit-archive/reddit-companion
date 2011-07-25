@@ -75,9 +75,7 @@ function update() {
 
 function initButtons() {
   if (buttonsReady || info._fake) { return }
-  $('#comments').click(function(e) {
-    clickOpenURL(e, 'http://reddit.com'+info.permalink)
-  })
+  $('#comments').attr('href', 'http://reddit.com'+info.permalink)
   
   $('#upvote').click(function() {
     vote(info.likes == true ? null : true)

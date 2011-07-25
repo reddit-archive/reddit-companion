@@ -2,7 +2,9 @@
 * Add option to enable/disable bar auto-show. [chromakode]
 * Add option to enable/disable mail notifications. [chromakode]
 * Remember closed bars and do not auto-show them. [mhweaver]
+* Improve click behavior for comments and submit buttons. [chromakode]
 * Use 16x16 icon for extension pages. [chromakode]
+* Fix bug causing inaccurate unread message counts. [chromakode]
 
 == Version 1.0.3 ==
 * Add options page. [sc0tt]

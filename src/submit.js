@@ -1,16 +1,10 @@
-function submit(e) {
-  if (clickOpenURL(e, 'http://reddit.com/submit/?resubmit=true'+
-                      '&url='+window.location.hash.substr(1)+
-                      '&title='+encodeURIComponent($('#title-input').val()))) {
-    // If the page is going away, show a working indicator.
-    $('#submit span').css('background-image', 'url(images/working0.png)')
-    $('#submit').css('opacity', .5).unbind()
-  }
-
-  // Pause for a moment, then zip away.
-  window.setTimeout(function() {
-    msgJSON({action:'close'})
-  }, 500)
+function updateTarget() {
+  var target =
+    'http://reddit.com/submit/?resubmit=true'+
+    '&url='+window.location.hash.substr(1)+
+    '&title='+encodeURIComponent($('#title-input').val())
+  $('#submit').attr('href', target)
+  return target
 }
 
 function randomMsg() {
@@ -24,10 +18,10 @@ function randomMsg() {
 $(document).ready(function() {
   $(window).resize(fitHeight)
 
-  $('#submit').click(submit)
   $('#title-input').keypress(function(e) {
+    updateTarget()
     if (e.which == 13) {
-      submit(e)
+      window.top.location = $('#submit').attr('href')
     }
   })
   

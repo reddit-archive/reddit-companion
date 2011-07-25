@@ -1,13 +1,3 @@
-function clickOpenURL(event, url) {
-  if (event.button == 1) {
-    window.open(url)
-    return false
-  } else {
-    window.top.location = url
-    return true
-  }
-}
-
 function msgJSON(request) {
   window.top.postMessage(JSON.stringify(request), "*")
 }
