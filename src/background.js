@@ -435,14 +435,18 @@ mailChecker = {
 }
 
 function setPageActionIcon(tab) {
-  if (/^http:\/\/.*/.test(tab.url) && localStorage['showPageAction'] == 'true') {
+  if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
     } else { 
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
     }
-    chrome.pageAction.show(tab.id)
+    if (localStorage['showPageAction'] == 'true') {
+      chrome.pageAction.show(tab.id)
+    } else {
+      chrome.pageAction.hide(tab.id)
+    }
     return info
   }
 }
@@ -475,14 +479,6 @@ function onActionClicked(tab) {
   })
 }
 
-function handleOptionChange(id, value) {
-  switch (id) {
-    case 'showPageAction':
-      setAllPageActionIcons()
-      break
-  }
-}
-
 chrome.tabs.onSelectionChanged.addListener(tabStatus.updateTab.bind(tabStatus))
 chrome.pageAction.onClicked.addListener(onActionClicked)
 
@@ -491,9 +487,6 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
     case 'thingClick':
       console.log('Thing clicked', request)
       redditInfo.setURL(request.url, request.info)
-      break
-    case 'optionChange':
-      handleOptionChange(request.id, request.value)
       break
   }
 })
@@ -527,12 +520,17 @@ chrome.extension.onConnect.addListener(function(port) {
 })
 
 window.addEventListener('storage', function(e) {
-  if (e.key == 'checkMail') {
-    if (e.newValue == 'true') {
-      mailChecker.start()
-    } else {
-      mailChecker.stop()
-    }
+  switch (e.key) {
+    case 'checkMail':
+      if (e.newValue == 'true') {
+        mailChecker.start()
+      } else {
+        mailChecker.stop()
+      }
+      break
+    case 'showPageAction':
+      setAllPageActionIcons()
+      break
   }
 }, false)
 
@@ -541,7 +539,6 @@ function setAllPageActionIcons() {
   chrome.windows.getAll({populate:true}, function(wins) {
     wins.forEach(function(win) {
       win.tabs.forEach(function(tab) {
-          chrome.pageAction.hide(tab.id)
           setPageActionIcon(tab)
       })
     })
@@ -551,7 +548,9 @@ function setAllPageActionIcons() {
 initOptions()
 console.log('Shine loaded.')
 redditInfo.init()
-setAllPageActionIcons()
+if (localStorage['showPageAction'] == 'true') {
+  setAllPageActionIcons()  
+}
 if (localStorage['checkMail'] == 'true') {
   mailChecker.start()
 } else {
