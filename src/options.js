@@ -19,5 +19,7 @@ $(document).ready(function() {
       var value= $(this).is(':checked')
       localStorage[this.id] = value
       $('#contents').toggleClass(this.id, value)
+      chrome.extension.sendRequest({action: 'optionChange', id: this.id,
+                                   value: value})
     })
 })
