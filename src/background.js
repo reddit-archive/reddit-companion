@@ -434,20 +434,13 @@ mailChecker = {
   }
 }
 
-function setPageActionIcon(tab) {
-  if (/^http:\/\/.*/.test(tab.url)) {
-    var info = redditInfo.getURL(tab.url)
-    if (info) {
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
-    } else { 
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
-    }
-    if (localStorage['showPageAction'] == 'true') {
-      chrome.pageAction.show(tab.id)
-    } else {
-      chrome.pageAction.hide(tab.id)
-    }
-    return info
+function setPageActionIcon(tab, info) {
+  if (localStorage['showPageAction'] == 'true' && /^http:\/\/.*/.test(tab.url)) {
+    var iconPath = info ? '/images/reddit.png' : '/images/reddit-inactive.png'
+    chrome.pageAction.setIcon({tabId:tab.id, path:iconPath})
+    chrome.pageAction.show(tab.id)
+  } else {
+    chrome.pageAction.hide(tab.id)
   }
 }
 
@@ -468,7 +461,7 @@ function onActionClicked(tab) {
   
   redditInfo.lookupURL(tab.url, true, function(info) {
     window.clearInterval(workingAnimation)
-    setPageActionIcon(tab)
+    setPageActionIcon(tab, info)
     delete workingPageActions[tab.id]
     
     if (info) {
@@ -499,7 +492,8 @@ chrome.extension.onConnect.addListener(function(port) {
     case 'overlay':
       tabStatus.add(port)
       var tab = port.sender.tab,
-          info = setPageActionIcon(tab)
+          info = redditInfo.getURL(tab.url)
+      setPageActionIcon(tab, info)
       if (info) {
         if (localStorage['autoShow'] == 'false') {
           console.log('Auto-show disabled. Ignoring reddit page', info)
@@ -539,7 +533,7 @@ function setAllPageActionIcons() {
   chrome.windows.getAll({populate:true}, function(wins) {
     wins.forEach(function(win) {
       win.tabs.forEach(function(tab) {
-          setPageActionIcon(tab)
+        setPageActionIcon(tab, redditInfo.getURL(tab.url))
       })
     })
   })
