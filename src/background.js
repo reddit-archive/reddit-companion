@@ -476,15 +476,6 @@ function onActionClicked(tab) {
   })
 }
 
-function handleOptionChange(id, value) {
-  switch (id) {
-    case 'allowHttps':
-      console.log('Https option changed')
-      setAllPageActionIcons()
-      break
-  }
-}
-
 chrome.tabs.onSelectionChanged.addListener(tabStatus.updateTab.bind(tabStatus))
 chrome.pageAction.onClicked.addListener(onActionClicked)
 
@@ -493,9 +484,6 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
     case 'thingClick':
       console.log('Thing clicked', request)
       redditInfo.setURL(request.url, request.info)
-      break
-    case 'optionChange':
-      handleOptionChange(request.id, request.value)
       break
   }
 })
@@ -514,7 +502,7 @@ chrome.extension.onConnect.addListener(function(port) {
           console.log('Auto-show disabled. Ignoring reddit page', info)
         } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
           console.log('Ignoring self post', info)
-        } else if (/^https:\/\/.*/.test(tab.url) && (localStorage['allowHttps'] == 'false')) {
+        } else if (localStorage['allowHttps'] == 'false' && /^https:\/\/.*/.test(tab.url)) {
           console.log('Https page. Ignoring', info)
         } else if (barStatus.hidden[info.name]) {
           console.log('Bar was closed on this page. Ignoring.', info)
@@ -531,12 +519,17 @@ chrome.extension.onConnect.addListener(function(port) {
 })
 
 window.addEventListener('storage', function(e) {
-  if (e.key == 'checkMail') {
-    if (e.newValue == 'true') {
-      mailChecker.start()
-    } else {
-      mailChecker.stop()
-    }
+  switch (e.key) {
+    case 'checkMail':
+      if (e.newValue == 'true') {
+        mailChecker.start()
+      } else {
+        mailChecker.stop()
+      }
+      break
+    case 'allowHttps':
+      setAllPageActionIcons()
+      break
   }
 }, false)
 
