@@ -86,7 +86,7 @@ window.addEventListener('message', function(e) {
   }
 }, false)
 
-port = chrome.extension.connect({name:'overlay'})
+port = chrome.extension.connect({name:'overlay,' + document.referrer})
 port.onMessage.addListener(function(request) {
   switch (request.action) {
     case 'showInfo':

@@ -24,7 +24,10 @@ Info.prototype = {
     this.info = {}
   },
   addURL: function(url) {
-    this.urlList[url] = url
+    this.urlList[url] = [url, null]
+  },
+  addVisitItem: function(url, visitItem) {
+    this.urlList[url] = [url, visitItem]
   }
 }
 redditInfo = {
@@ -41,8 +44,23 @@ redditInfo = {
     }
   },
   fetching: {},
-
   getURL: function(url) {
+    var infoObj = this.getInfo(url)
+    return infoObj ? infoObj.info : undefined
+  },
+  getURLList: function() {
+    urls = []
+    for (x in this.urls) {
+      for (y in this.urls[x].urlList) {
+        urls.push(this.urls[x].urlList[y])
+      }
+    }
+    return urls
+  },
+  getFullname: function(name) {
+    return this.fullname[name]
+  },
+  getInfo: function(url) {
     for (x in this.urls) {
       if(this.urls[x].urlList[url]) {
         return this.urls[x].info
@@ -507,9 +525,8 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
       break
   }
 })
-
-chrome.extension.onConnect.addListener(function(port) {
-  tag = port.name.split(':')
+function portConnectHandler(port) {
+  tag = port.name.split(',')
   name = tag[0]
   data = tag[1]
   switch (name) {
@@ -528,14 +545,55 @@ chrome.extension.onConnect.addListener(function(port) {
           console.log('Recognized page '+tab.url, info)
           tabStatus.showInfo(tab.id, info.name)
         }
+      } else {
+        var referrer = data
+        if (!/^http:\/\/www\.reddit\.com\/.*/.test(tab.url) &&
+            /^http:\/\/www\.reddit\.com\/.*/.test(referrer)) {
+          console.log("Redirect detected. Attempting to locate associated info.", port)
+          handleRedirect(port, tab)
+        }
       }
       break
     case 'bar':
       barStatus.add(port, data)
       break
   }
-})
-
+}
+chrome.extension.onConnect.addListener(portConnectHandler)
+function getLastVisitItem(url, callback) {
+  chrome.history.getVisits({url: url}, function (items) {
+    // get the last VisitItem for this URL. We'll assume it's the droid we're looking for.
+    callback(items.sort(function(a,b) {b.visitTime - a.visitTime})[0])
+  })
+}
+function handleRedirect(port, tab) {
+  getLastVisitItem(tab.url, function(visitItem) {
+    var urls = redditInfo.getURLList()
+    // urls[i] = ["url_here", null or chrome.history.VisitItem]
+    for (i in urls) {
+      var currentInfo = redditInfo.getInfo(urls[i][0])
+      var url = urls[i][0]
+      var thisVisitItem = urls[i][1]
+      var infoMatched = function() {
+        console.log("Located redirected page's info.", currentInfo)
+        currentInfo.addVisitItem(tab.url, visitItem)
+        portConnectHandler(port)
+      }
+      if (thisVisitItem == null) {
+        getLastVisitItem(url, function (storedVisitItem) {
+          currentInfo.addVisitItem(url, storedVisitItem)
+          if (storedVisitItem.visitId == visitItem.referringVisitId) {
+            infoMatched()
+          }
+        })
+      } else {
+        if (thisVisitItem.visitId == visitItem.referringVisitId) {
+          infoMatched()
+        }
+      }
+    }
+  })
+}
 window.addEventListener('storage', function(e) {
   if (e.key == 'checkMail') {
     if (e.newValue == 'true') {
