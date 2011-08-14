@@ -529,12 +529,14 @@ function handleConnect(port) {
   switch (name) {
     case 'overlay':
       tabStatus.add(port)
+      if (localStorage['autoShow'] == 'false') {
+          console.log('Auto-show disabled. Ignoring page')
+          return
+      }
       var tab = port.sender.tab,
           info = setPageActionIcon(tab)
       if (info) {
-        if (localStorage['autoShow'] == 'false') {
-          console.log('Auto-show disabled. Ignoring reddit page', info)
-        } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
+        if (info.is_self && localStorage['autoShowSelf'] == 'false') {
           console.log('Ignoring self post', info)
         } else if (barStatus.hidden[info.name]) {
           console.log('Bar was closed on this page. Ignoring.', info)
