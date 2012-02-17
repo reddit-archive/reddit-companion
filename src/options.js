@@ -23,7 +23,7 @@ $(document).ready(function() {
   $('#checkMail')
     .click(function() {
       var checked = this.checked;
-      $('#checkModMail').each(
+      $('#checkModMail, #autoCloseMessages').each(
         function(idx, elt) {
           elt.disabled = !checked;
         }

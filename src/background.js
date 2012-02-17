@@ -4,7 +4,8 @@ function initOptions() {
     'autoShowSelf': true,
     'showTooltips': true,
     'checkMail': true,
-    'checkModMail': true
+    'checkModMail': true,
+    'autoCloseMessages': true
   }
 
   for (key in defaultOptions) {
@@ -461,6 +462,10 @@ function Notifier(url, image, title, text) {
     }.bind(this)
 
     this.notification.show()
+
+    if (localStorage.autoCloseMessages) {
+      window.setTimeout(n.cancel.bind(n), 30*1000);
+    }
   }
 }
 
