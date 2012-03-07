@@ -43,8 +43,9 @@ function scrapeThingInfo(thing) {
 
 function thingClicked(e) {
   var a = e.target
-  if (a.nodeName != 'A' || !a.classList.contains('title')) { return }
-    
+  if (a.nodeName == 'IMG') { a = a.parentElement }
+  if (a.nodeName != 'A' || (!a.classList.contains('title') && !a.classList.contains('thumbnail'))) { return }
+
   // Find the parent element of the clicked link that represents the entire thing.
   var el = a
   do {
