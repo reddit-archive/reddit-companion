@@ -18,7 +18,7 @@ function randomMsg() {
 $(document).ready(function() {
   $(window).resize(fitHeight)
 
-  $('#title-input').keypress(function(e) {
+  $('#title-input').keyup(function(e) {
     updateTarget()
     if (e.which == 13) {
       window.top.location = $('#submit').attr('href')
