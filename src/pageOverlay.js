@@ -82,6 +82,13 @@ window.addEventListener('message', function(e) {
       case 'close':
         removeBar()
         break
+      case 'closeTab':
+        if (window.history.length > 1) {
+          window.history.go(-1)
+        } else {
+          port.postMessage({action:'closeTab'})
+        }
+        break
     }
   }
 }, false)
