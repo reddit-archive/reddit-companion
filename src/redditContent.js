@@ -1,7 +1,7 @@
 function scrapeThingInfo(thing) {
   var info = {};
 
-  fullnameMatch = thing.className.match(/id-(\w+)/);
+  var fullnameMatch = thing.className.match(/id-(\w+)/);
   if (!fullnameMatch) {
     return false;
   }
