@@ -7,7 +7,8 @@ function initOptions() {
     'allowHttps': false,
     'notifyTimeout': false,
     'notifyTime': 30,
-    'showPageAction': true
+    'showPageAction': true,
+    'notificationPrivacy': false
   }
 
   for (key in defaultOptions) {
@@ -409,8 +410,14 @@ mailNotifier = {
     var title, text
     if (newCount == 1) {
       var message = messages[newIdx]
-      title = message.data.author + ': ' + message.data.subject
-      text = message.data.body
+      if (localStorage['notificationPrivacy'] == 'true') {
+        title = 'reddit: new message!'
+        text = 'You have a new message.'
+      } else {
+        title = message.data.author + ': ' + message.data.subject
+        text = message.data.body
+      }
+      
     } else if (newCount > 1) {
       title = 'reddit: new messages!'
       text = 'You have ' + messages.length + ' new messages.'
