@@ -20,6 +20,9 @@ ShineOverlay.prototype = {
     this.overlay = document.createElement('shinebar')
     this.overlay.appendChild(this.frame)
     document.documentElement.appendChild(this.overlay)
+    if (location.host.match(/^([-a-z0-9]+\.)*reddit.com$/)) {
+      document.body.style.position = "relative"
+    }
   },
   
   setHeight: function(height) {
