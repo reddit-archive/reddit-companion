@@ -19,6 +19,9 @@ function vote(likes) {
 
 function toggleSaved() {
   info.saved = !info.saved
+  if(localStorage['showTooltips'] == "true") {
+    info.saved ? $('#save').attr('title','Unsave') : $('#save').attr('title','Save')
+  }
   update()
   if (info.saved) {
     port.postMessage({action:'save'})
@@ -71,8 +74,8 @@ function update() {
     $('#bar').removeClass('subreddit')
   }
   $('#comments span').text(info.num_comments)
+  
 }
-
 function initButtons() {
   if (buttonsReady || info._fake) { return }
   $('#comments').attr('href', 'http://www.reddit.com'+info.permalink)
