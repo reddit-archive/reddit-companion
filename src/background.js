@@ -254,6 +254,13 @@ tabStatus = {
         tabData = {port:port}
     console.log('Tab added', tabId)
     this.tabId[tabId] = tabData
+    port.onMessage.addListener(function(tab, request) {
+      switch (request.action) {
+        case 'closeTab':
+          chrome.tabs.remove(tab)
+          break
+      }
+    }.bind(this, tabId))
     port.onDisconnect.addListener(this.remove.bind(this, tabId))
   },
 

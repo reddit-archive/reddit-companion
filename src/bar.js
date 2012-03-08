@@ -10,11 +10,16 @@ function likeDelta(likes) {
   }
 }
 
-function vote(likes) {
+function vote(likes, shift) {
   info.score += likeDelta(likes) - likeDelta(info.likes)
   info.likes = likes
   update()
   port.postMessage({action:'vote', likes:info.likes})
+  // If closeOnVote set, close unless shift is pressed.
+  // If unset, close if shift is pressed.
+  if (!!localStorage['closeOnVote'] != !!shift) {
+    msgJSON({action:'closeTab'});
+  }
 }
 
 function toggleSaved() {
@@ -80,12 +85,12 @@ function initButtons() {
   if (buttonsReady || info._fake) { return }
   $('#comments').attr('href', 'http://www.reddit.com'+info.permalink)
   
-  $('#upvote').click(function() {
-    vote(info.likes == true ? null : true)
+  $('#upvote').click(function(evt) {
+    vote(info.likes == true ? null : true, evt.shiftKey)
   })
 
-  $('#downvote').click(function() {
-    vote(info.likes == false ? null : false)
+  $('#downvote').click(function(evt) {
+    vote(info.likes == false ? null : false, evt.shiftKey)
   })
 
   $('#save').click(function() {
