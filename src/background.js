@@ -357,13 +357,14 @@ barStatus = {
   }
 }
 
-function Notifier(url, image, title, text) {
-  this.url = url;
-  this.image = image;
-  this.title = title;
-  this.text = text;
-  this.localStorageKey = 'last-seen:'+url;
-  this.lastSeen = localStorage[this.localStorageKey] || 0;
+Notifier.prototype = {
+  url: null,
+  image: null,
+  title: null,
+  text: null,
+  localStorageKey: null,
+  lastSeen: 0,
+  notification: null,
   /*
    * Returned object:
    * count: Number of new messages
@@ -372,7 +373,7 @@ function Notifier(url, image, title, text) {
    * time:  The most recent message timestamp among
    *        this message and any of its children.
    */
-  this.processMessage = function(message, since) {
+  processMessage: function(message, since) {
     var data = message.data;
     var rv = {
       count: 0,
@@ -394,9 +395,9 @@ function Notifier(url, image, title, text) {
     }
 
     return rv;
-  }
+  },
 
-  this.processMessageList = function(messages, since) {
+  processMessageList: function(messages, since) {
     var rv = {
       count: 0,
       title: null,
@@ -413,9 +414,9 @@ function Notifier(url, image, title, text) {
     }
 
     return rv;
-  }
+  },
 
-  this.notify = function(messages) {
+  notify: function(messages) {
     var newIdx = null,
         lastSeen = this.lastSeen,
         newCount = 0
@@ -438,19 +439,18 @@ function Notifier(url, image, title, text) {
     }
 
     this.showNotification(title, text)
-  };
+  },
 
-  this.clear = function() {
+  clear: function() {
     if (this.notification) {
       this.notification.cancel()
     }
-  };
 
-  this.notification = null,
-  this.showNotification = function(title, text) {
-    if (this.notification) {
-      this.notification.cancel()
-    }
+    this.notification = null
+  },
+
+  showNotification: function(title, text) {
+    this.clear()
 
     var n = this.notification =
       webkitNotifications.createNotification(this.image, title, text)
@@ -462,6 +462,15 @@ function Notifier(url, image, title, text) {
 
     this.notification.show()
   }
+}
+
+function Notifier(url, image, title, text) {
+  this.url = url;
+  this.image = image;
+  this.title = title;
+  this.text = text;
+  this.localStorageKey = 'last-seen:'+url;
+  this.lastSeen = localStorage[this.localStorageKey] || 0;
 }
 
 mailNotifier = new Notifier(
@@ -540,12 +549,12 @@ function onActionClicked(tab) {
     }
     frame = (frame + 1) % 6
   }, 200)
-  
+
   redditInfo.lookupURL(tab.url, true, function(info) {
     window.clearInterval(workingAnimation)
     setPageActionIcon(tab)
     delete workingPageActions[tab.id]
-    
+
     if (info) {
       tabStatus.showInfo(tab.id, info.name)
     } else {

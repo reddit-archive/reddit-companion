@@ -23,7 +23,7 @@ $(document).ready(function() {
   $('#checkMail')
     .click(function() {
       var checked = this.checked;
-      $('#checkModMail').each(
+      $('.requires-mail').each(
         function(idx, elt) {
           elt.disabled = !checked;
         }
