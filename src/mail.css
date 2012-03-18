@@ -1,0 +1,10 @@
+body { margin: 5px; font: normal small verdana, arial, helvetica, sans-serif; cursor: pointer; overflow: hidden; }
+td { font-size: small; }
+p { margin: 5px 2px; }
+#text-cell > p:first-child { margin-top: 0 }
+#img-cell { width: 18px; padding-right: 2px; }
+#img-cell > img { margin-top: 1px; }
+#from, #r.sr { font-weight: bold; }
+#header { font-size: smaller; margin-bottom: 3px; }
+#subject { font-weight: bold; }
+.userlink { text-decoration: none; cursor: pointer; color: blue; }

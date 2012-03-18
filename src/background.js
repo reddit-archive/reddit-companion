@@ -414,32 +414,36 @@ Notifier.prototype = {
   localStorageKey: null,
   lastSeen: 0,
   notification: null,
-  /*
-   * Returned object:
-   * count: Number of new messages
-   * title: Title of first new message, or null
-   * body:  Body of first new message, or null
-   * time:  The most recent message timestamp among
-   *        this message and any of its children.
-   */
+
+  createDefaultValue: function(since) {
+    return {
+      count: 0,          // Number of new messages,
+      time:  since,      // Most recent time among all messages found.
+      info: {            // Information for the *most recent* message:
+        author:    null, //   Message author
+        subject:   null, //   Message subject
+        dest:      null, //   Message destination (typically you, but can be different for modmail)
+        body:      null, //   Message body (Markdown)
+        body_html: null, //   Message body (HTML)
+        subreddit: null, //   Message subreddit (set for replies/modmail, null for PMs)
+      }
+    }
+  },
+
   processMessage: function(message, since) {
     var data = message.data;
-    var rv = {
-      count: 0,
-      title: null,
-      body:  null,
-      time:  since
-    };
+    var rv = this.createDefaultValue(since);
 
     if (data.replies) {
       rv = this.processMessageList(data.replies.data.children, since);
     }
 
-    if (data.author != redditInfo.user && data.created_utc > since) {
+    if (data.author != redditInfo.user && data.created_utc > rv.time) {
       rv.count++;
-      rv.title = data.author + ': ' + data.subject;
-      rv.body  = data.body;
-      rv.time  = Math.max(rv.time, data.created_utc);
+      rv.time = Math.max(rv.time, data.created_utc);
+      for (var i in rv.info) {
+        rv.info[i] = data[i];
+      }
       console.log('New message: ', data);
     }
 
@@ -447,24 +451,51 @@ Notifier.prototype = {
   },
 
   processMessageList: function(messages, since) {
-    var rv = {
-      count: 0,
-      title: null,
-      body:  null,
-      time:  since
-    };
+    var rv = this.createDefaultValue(since);
 
     for (var i = 0; i < messages.length; i++) {
       var messageData = this.processMessage(messages[i], since);
+
       rv.count += messageData.count;
-      rv.title = rv.title || messageData.title;
-      rv.body  = rv.body  || messageData.body;
-      rv.time  = Math.max(rv.time, messageData.time);
+      if (rv.time < messageData.time) {
+        rv.time = messageData.time;
+        rv.info = messageData.info;
+      }
     }
 
     return rv;
   },
 
+  createNotification: function(data) {
+    var substPlural = function(text) {
+      return text.replace('{count}', data.count).replace('{s}', data.count > 1 ? 's' : '')
+    }
+
+    var title, text, info, isRich = false;
+
+    if (data.count > 1) {
+      isRich = false
+    } else if (data.count == 1) {
+      isRich = (localStorage['notificationPrivacy'] != "true")
+    } else {
+      return null
+    }
+
+    if (isRich) {
+      return webkitNotifications.createHTMLNotification(
+        'mail.html#'+JSON.stringify({
+          image: this.image,
+          info:  data.info
+        })
+      )
+    } else {
+      return webkitNotifications.createNotification(
+        this.image,
+        substPlural(this.title),
+        substPlural(this.text)
+      )
+    }
+  },
 
   notify: function(messages, force) {
     var newIdx = null,
@@ -477,23 +508,11 @@ Notifier.prototype = {
 
     console.log('New messages: ', data.count);
 
-    var title, text
-    if (data.count > 1) {
-      title = this.title;
-      text = this.text.replace('{count}', data.count);
-    } else if (data.count == 1) {
-      if (localStorage['notificationPrivacy'] == 'true') {
-        title = 'reddit: new message!'
-        text = 'You have a new message.'
-      } else {
-        title = data.title;
-        text  = data.body;
-      }
-    } else {
-      return;
-    }
+    var n = this.createNotification(data);
 
-    this.showNotification(title, text)
+    if (n) {
+      this.showNotification(n);
+    }
   },
 
   clear: function() {
@@ -504,12 +523,10 @@ Notifier.prototype = {
     this.notification = null
   },
 
-  showNotification: function(title, text) {
+  showNotification: function(n) {
     this.clear()
+    this.notification = n;
 
-    var n = this.notification =
-      webkitNotifications.createNotification(this.image, title, text)
-	
     if (localStorage['notifyTimeout'] == "true") {
       setTimeout(function() {
         n.cancel();
@@ -531,21 +548,21 @@ function Notifier(url, image, title, text) {
   this.title = title;
   this.text = text;
   this.localStorageKey = 'last-seen:'+url;
-  this.lastSeen = localStorage[this.localStorageKey] || 0;
+  this.lastSeen = parseFloat(localStorage[this.localStorageKey]) || 0.0;
 }
 
 mailNotifier = new Notifier(
     'http://www.reddit.com/message/unread/',
     'images/reddit-mail.svg',
-    'reddit: new messages!',
-    'You have {count} new messages.'
+    'reddit: new message{s}!',
+    'You have {count} new message{s}.'
 );
 
 modmailNotifier = new Notifier(
     'http://www.reddit.com/message/moderator/',
     'images/reddit-mail.svg',
     'reddit: new modmail!',
-    'You have {count} new moderator messages.'
+    'You have {count} new moderator message{s}.'
 );
 
 mailChecker = {
