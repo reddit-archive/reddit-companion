@@ -17,8 +17,11 @@
         <div class="options">
           <ul>
             <li><input type="checkbox" id="autoShow"> <label for="autoShow">display automatically after clicking links on reddit</label></li>
+            <li><input type="checkbox" id="showPageAction"> <label for="showPageAction">display icon in address bar</label></li>
             <li><input type="checkbox" id="autoShowSelf"> <label for="autoShowSelf">display when viewing self posts</label></li>
             <li><input type="checkbox" id="showTooltips"> <label for="showTooltips">show tooltips on buttons</label></li>
+            <li><input type="checkbox" id="closeOnVote"> <label for="closeOnVote">close tab / go back on vote (shift+click to override)</label></li>
+            <li><input type="checkbox" id="allowHttps"> <label for="allowHttps">enable companion on https pages</label>
           </ul>
         </div>
       </section>
@@ -31,6 +34,10 @@
         <div class="options">
           <ul>
             <li><input type="checkbox" id="checkMail"> <label for="checkMail">display new message notifications</label></li>
+            <li><input type="checkbox" id="checkModMail" class="requires-mail"> <label for="checkMail">display notifications for modmail</label></li>
+            <li><input type="checkbox" id="notifyTimeout" class="requires-mail"> <label for="notifyTime">close notifications after <span id="numSeconds">0</span> seconds</label> <span class="finePrint">(Adjust below)</span><br />
+                <input type="range" min="10" max="180" step="5" id="notifyTime" class="requires-mail requires-timeout"></li>
+            <li><input type="checkbox" id="notificationPrivacy" class="requires-mail"> <label for="notificationPrivacy">hide the message contents in the notification</label></li>
           </ul>
         </div>
       </section>

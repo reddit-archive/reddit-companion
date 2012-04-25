@@ -10,15 +10,23 @@ function likeDelta(likes) {
   }
 }
 
-function vote(likes) {
+function vote(likes, shift) {
   info.score += likeDelta(likes) - likeDelta(info.likes)
   info.likes = likes
   update()
   port.postMessage({action:'vote', likes:info.likes})
+  // If closeOnVote set, close unless shift is pressed.
+  // If unset, close if shift is pressed.
+  if (!!localStorage['closeOnVote'] != !!shift) {
+    msgJSON({action:'closeTab'});
+  }
 }
 
 function toggleSaved() {
   info.saved = !info.saved
+  if(localStorage['showTooltips'] == "true") {
+    info.saved ? $('#save').attr('title','Unsave') : $('#save').attr('title','Save')
+  }
   update()
   if (info.saved) {
     port.postMessage({action:'save'})
@@ -71,18 +79,18 @@ function update() {
     $('#bar').removeClass('subreddit')
   }
   $('#comments span').text(info.num_comments)
+  
 }
-
 function initButtons() {
   if (buttonsReady || info._fake) { return }
   $('#comments').attr('href', 'http://www.reddit.com'+info.permalink)
   
-  $('#upvote').click(function() {
-    vote(info.likes == true ? null : true)
+  $('#upvote').click(function(evt) {
+    vote(info.likes == true ? null : true, evt.shiftKey)
   })
 
-  $('#downvote').click(function() {
-    vote(info.likes == false ? null : false)
+  $('#downvote').click(function(evt) {
+    vote(info.likes == false ? null : false, evt.shiftKey)
   })
 
   $('#save').click(function() {
@@ -110,7 +118,7 @@ $(document).ready(function() {
 
 buttonsReady = false
 fullname = window.location.hash.substr(1)
-port = chrome.extension.connect({name:'bar:'+fullname})
+port = chrome.extension.connect({name:'bar^'+fullname})
 port.onMessage.addListener(function(msg) {
   switch (msg.action) {
     case 'update':
