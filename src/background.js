@@ -3,7 +3,7 @@ function initOptions() {
     'autoShow': true,
     'autoShowSelf': true,
     'showTooltips': true,
-    'checkMail': true,
+    'checkMail': true
   }
 
   for (key in defaultOptions) {
@@ -12,11 +12,28 @@ function initOptions() {
     }
   }
 }
-
+function Info(url, info) {
+  this.init()
+  this.info = info
+  this.addURL(url)
+  console.log('New Info object instaniated', this)
+}
+Info.prototype = {
+  init: function() {
+    this.urlList = {}
+    this.info = {}
+  },
+  addURL: function(url) {
+    this.urlList[url] = [url, null]
+  },
+  addVisitItem: function(url, visitItem) {
+    this.urlList[url] = [url, visitItem]
+  }
+}
 redditInfo = {
   freshAgeThreshold: 5*60,
 
-  url: {},
+  urls: {}, // full of Info objects
   fullname: {
     _shine_demo: {
       title: 'companion bar',
@@ -27,16 +44,36 @@ redditInfo = {
     }
   },
   fetching: {},
-
   getURL: function(url) {
-    return this.url[url]
+    var infoObj = this.getInfo(url)
+    return infoObj ? infoObj.info : undefined
+  },
+  getURLList: function() {
+    var urls = []
+    for (x in this.urls) {
+      for (y in this.urls[x].urlList) {
+        urls.push(this.urls[x].urlList[y])
+      }
+    }
+    return urls
+  },
+  getFullname: function(name) {
+    return this.fullname[name]
+  },
+  getInfo: function(url) {
+    for (x in this.urls) {
+      if(this.urls[x].urlList[url]) {
+        return this.urls[x]
+      }
+    }
+    return undefined
   },
   
   setURL: function(url, info) {
     info._ts = info._ts || Date.now()
     var stored = this.fullname[info.name]
     if (!stored || stored._ts < info._ts) {
-      this.url[url] = info
+      this.urls[url] = new Info(url, info)
       this.fullname[info.name] = info
       console.log('Stored reddit info for', url, info)
     } else {
@@ -101,16 +138,16 @@ redditInfo = {
     })
   },
   
-  _storedLookup: function(keyName, key, array, useStored, callback) {
+  _storedLookup: function(keyName, key, accessor, useStored, callback) {
     // Internal rate limited cached info getter.
     //
-    // Look up `key` from `array` and call `callback` with the stored data immediately if
+    // Look up `key` using `accessor` and call `callback` with the stored data immediately if
     // `useStored` is true and stored info is available. If stored data is
     // currently in the process of being refreshed or it is older than
     // redditInfo.freshAgeThreshold seconds old, false is returned. Otherwise,
     // the data is fetched from reddit and `callback` is invoked with the
     // result.
-    var stored = array[key],
+    var stored = accessor.apply(this, [key]),
         storedAge = 0,
         now = Date.now()
     if (stored) {
@@ -129,7 +166,7 @@ redditInfo = {
         return false
       }
     
-      storedAge = Math.floor((now - stored._ts) / 1000)
+      var storedAge = Math.floor((now - stored._ts) / 1000)
       if (storedAge < redditInfo.freshAgeThreshold) {
         console.log('Info is', storedAge, 'seconds old. Skipping update.', stored)
         return false
@@ -149,11 +186,11 @@ redditInfo = {
   },
 
   lookupURL: function(url, useStored, callback) {
-    this._storedLookup('url', url, this.url, useStored, callback)
+    this._storedLookup('url', url, this.getURL, useStored, callback)
   },
 
   lookupName: function(name, useStored, callback) {
-    this._storedLookup('id', name, this.fullname, useStored, callback)
+    this._storedLookup('id', name, this.getFullname, useStored, callback)
   },
 
   _thingAction: function(action, data, callback) {
@@ -354,7 +391,7 @@ mailNotifier = {
     var newIdx = null,
         lastSeen = this.lastSeen,
         newCount = 0
-    for (i = 0; i < messages.length; i++) {
+    for (var i = 0; i < messages.length; i++) {
       var messageTime = messages[i].data.created_utc*1000
       if (!lastSeen || messageTime > lastSeen) {
         newCount++
@@ -485,20 +522,21 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
       break
   }
 })
-
-chrome.extension.onConnect.addListener(function(port) {
-  tag = port.name.split(':')
-  name = tag[0]
-  data = tag[1]
+function handleConnect(port) {
+  var tag = port.name.split('^')
+  var name = tag[0],
+      data = tag[1]
   switch (name) {
     case 'overlay':
       tabStatus.add(port)
+      if (localStorage['autoShow'] == 'false') {
+          console.log('Auto-show disabled. Ignoring page')
+          return
+      }
       var tab = port.sender.tab,
           info = setPageActionIcon(tab)
       if (info) {
-        if (localStorage['autoShow'] == 'false') {
-          console.log('Auto-show disabled. Ignoring reddit page', info)
-        } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
+        if (info.is_self && localStorage['autoShowSelf'] == 'false') {
           console.log('Ignoring self post', info)
         } else if (barStatus.hidden[info.name]) {
           console.log('Bar was closed on this page. Ignoring.', info)
@@ -506,14 +544,55 @@ chrome.extension.onConnect.addListener(function(port) {
           console.log('Recognized page '+tab.url, info)
           tabStatus.showInfo(tab.id, info.name)
         }
+      } else {
+        var referrer = data,
+            redditPattern = /^http:\/\/www\.reddit\.com\/.*/
+        if (!redditPattern.test(tab.url) && redditPattern.test(referrer)) {
+          console.log("Redirect detected. Attempting to locate associated info.", port)
+          handleRedirect(port, tab)
+        }
       }
       break
     case 'bar':
       barStatus.add(port, data)
       break
   }
-})
-
+}
+chrome.extension.onConnect.addListener(handleConnect)
+function getLastVisitItem(url, callback) {
+  chrome.history.getVisits({url: url}, function (items) {
+    // get the last VisitItem for this URL. We'll assume it's the droid we're looking for.
+    callback(items.sort(function(a,b) {b.visitTime - a.visitTime})[0])
+  })
+}
+function handleRedirect(port, tab) {
+  getLastVisitItem(tab.url, function(visitItem) {
+    var urls = redditInfo.getURLList()
+    // urls[i] = ["url_here", null or chrome.history.VisitItem]
+    for (i in urls) {
+      var currentInfo = redditInfo.getInfo(urls[i][0]),
+          url = urls[i][0],
+          thisVisitItem = urls[i][1]
+      var infoMatched = function() {
+        console.log("Located redirected page's info. Trying again.", currentInfo)
+        currentInfo.addVisitItem(tab.url, visitItem)
+        handleConnect(port)
+      }
+      if (thisVisitItem == null) {
+        getLastVisitItem(url, function (storedVisitItem) {
+          currentInfo.addVisitItem(url, storedVisitItem)
+          if (storedVisitItem.visitId == visitItem.referringVisitId) {
+            infoMatched()
+          }
+        })
+      } else {
+        if (thisVisitItem.visitId == visitItem.referringVisitId) {
+          infoMatched()
+        }
+      }
+    }
+  })
+}
 window.addEventListener('storage', function(e) {
   if (e.key == 'checkMail') {
     if (e.newValue == 'true') {
