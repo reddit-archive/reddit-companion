@@ -20,4 +20,15 @@ $(document).ready(function() {
       localStorage[this.id] = value
       $('#contents').toggleClass(this.id, value)
     })
+	$('#notifyTime')
+	.val(localStorage['notifyTime'])
+	.change(function() {
+		var sec = parseInt($(this).val())
+		if (isNaN(sec)) sec = 30
+		else if(sec > 300) sec = 300
+		else if (sec < 10) sec = 10
+		localStorage[$(this).attr('id')] = sec
+		$('#numSeconds').text(sec);
+	})
+	$('#numSeconds').text(localStorage['notifyTime']);
 })
