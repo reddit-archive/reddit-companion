@@ -25,7 +25,7 @@
       "js": ["debug.js", "redditContent.js"]
     },
     {
-      "matches": ["http://*/*"],
+      "matches": ["http://*/*", "https://*/*"],
       "run_at": "document_start",
       "js": ["debug.js", "pageOverlay.js"],
       "css": ["pageOverlay.css"]

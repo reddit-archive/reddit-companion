@@ -4,6 +4,7 @@ function initOptions() {
     'autoShowSelf': true,
     'showTooltips': true,
     'checkMail': true,
+    'allowHttps': false
   }
 
   for (key in defaultOptions) {
@@ -433,16 +434,14 @@ mailChecker = {
   }
 }
 
-function setPageActionIcon(tab) {
-  if (/^http:\/\/.*/.test(tab.url)) {
-    var info = redditInfo.getURL(tab.url)
-    if (info) {
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
-    } else { 
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
-    }
+function setPageActionIcon(tab, info) {
+  var pattern = (localStorage['allowHttps'] == 'true') ? /^https?:\/\/.*/ : /^http:\/\/.*/
+  if (pattern.test(tab.url)) {
+    var iconPath = info ? '/images/reddit.png' : '/images/reddit-inactive.png'
+    chrome.pageAction.setIcon({tabId:tab.id, path:iconPath})
     chrome.pageAction.show(tab.id)
-    return info
+  } else {
+    chrome.pageAction.hide(tab.id)
   }
 }
 
@@ -463,7 +462,7 @@ function onActionClicked(tab) {
   
   redditInfo.lookupURL(tab.url, true, function(info) {
     window.clearInterval(workingAnimation)
-    setPageActionIcon(tab)
+    setPageActionIcon(tab, info)
     delete workingPageActions[tab.id]
     
     if (info) {
@@ -494,12 +493,15 @@ chrome.extension.onConnect.addListener(function(port) {
     case 'overlay':
       tabStatus.add(port)
       var tab = port.sender.tab,
-          info = setPageActionIcon(tab)
+          info = redditInfo.getURL(tab.url)
+      setPageActionIcon(tab, info)
       if (info) {
         if (localStorage['autoShow'] == 'false') {
           console.log('Auto-show disabled. Ignoring reddit page', info)
         } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
           console.log('Ignoring self post', info)
+        } else if (localStorage['allowHttps'] == 'false' && /^https:\/\/.*/.test(tab.url)) {
+          console.log('Https page. Ignoring', info)
         } else if (barStatus.hidden[info.name]) {
           console.log('Bar was closed on this page. Ignoring.', info)
         } else {
@@ -515,27 +517,35 @@ chrome.extension.onConnect.addListener(function(port) {
 })
 
 window.addEventListener('storage', function(e) {
-  if (e.key == 'checkMail') {
-    if (e.newValue == 'true') {
-      mailChecker.start()
-    } else {
-      mailChecker.stop()
-    }
+  switch (e.key) {
+    case 'checkMail':
+      if (e.newValue == 'true') {
+        mailChecker.start()
+      } else {
+        mailChecker.stop()
+      }
+      break
+    case 'allowHttps':
+      setAllPageActionIcons()
+      break
   }
 }, false)
 
 // Show page action for existing tabs.
-chrome.windows.getAll({populate:true}, function(wins) {
-  wins.forEach(function(win) {
-    win.tabs.forEach(function(tab) {
-      setPageActionIcon(tab)
+function setAllPageActionIcons() {
+  chrome.windows.getAll({populate:true}, function(wins) {
+    wins.forEach(function(win) {
+      win.tabs.forEach(function(tab) {
+        setPageActionIcon(tab, redditInfo.getURL(tab.url))
+      })
     })
   })
-})
+}
 
 initOptions()
 console.log('Shine loaded.')
 redditInfo.init()
+setAllPageActionIcons()
 if (localStorage['checkMail'] == 'true') {
   mailChecker.start()
 } else {
