@@ -20,4 +20,14 @@ $(document).ready(function() {
       localStorage[this.id] = value
       $('#contents').toggleClass(this.id, value)
     })
+  $('#checkMail')
+    .click(function() {
+      var checked = this.checked;
+      $('.requires-mail').each(
+        function(idx, elt) {
+          elt.disabled = !checked;
+        }
+      );
+    });
+
 })
