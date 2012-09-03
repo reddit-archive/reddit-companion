@@ -206,6 +206,7 @@ redditInfo = {
 
 tabStatus = {
   tabId: {},
+  deletedTabs: {},
 
   add: function(port) {
     var tabId = port.sender.tab.id,
@@ -225,6 +226,10 @@ tabStatus = {
   remove: function(tabId) {
     console.log('Tab removed', tabId)
     var fullname = this.tabId[tabId].fullname
+    if (this.deletedTabs[tabId]) {
+        console.log('Removed URL: ', this.deletedTabs[tabId].url)
+        this.deletedTabs[tabId].tab = this.tabId[tabId]
+    }
     delete this.tabId[tabId]
   },
 
@@ -436,11 +441,19 @@ mailChecker = {
 function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
+
+    if (!info && tabStatus.deletedTabs[tab.id] && (new Date().getTime() - tabStatus.deletedTabs[tab.id].ts) < 2500) {
+        info = redditInfo.getURL(tabStatus.deletedTabs[tab.id].url)
+        console.log('Tab revived with previous URL',tabStatus.deletedTabs[tab.id].url)
+        delete tabStatus.deletedTabs[tab.id]
+    }
+
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
-    } else { 
+    } else {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
     }
+    
     chrome.pageAction.show(tab.id)
     return info
   }
@@ -481,6 +494,8 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
   switch (request.action) {
     case 'thingClick':
       console.log('Thing clicked', request)
+      // this happens async so we're not touch tabStatus.tabId directly -- remove() might be called as we touch this
+      tabStatus.deletedTabs[sender.tab.id] = {"url": request.url, "ts": new Date().getTime()}
       redditInfo.setURL(request.url, request.info)
       break
   }
