@@ -1,6 +1,7 @@
 {
   "name": "reddit companion",
   "version": "1.1.1",
+  "manifest_version": 2,
   "description": "Turn your browser into a redditor's best friend.",
   "options_page": "options.html",
   "permissions": [
@@ -13,11 +14,13 @@
     "48"  : "images/shine-48.png",
     "128" : "images/shine-128.png"
   },
+  "background" : {
+    "page": "background.html"
+  },
   "page_action": {
     "default_icon": "images/reddit.png",
     "default_title": "Show reddit information"
   },
-  "background_page" : "background.html",
   "content_scripts": [
     {
       "matches": ["http://*.reddit.com/*"],
@@ -30,5 +33,11 @@
       "js": ["debug.js", "pageOverlay.js"],
       "css": ["pageOverlay.css"]
     }
+  ],
+  "web_accessible_resources": [
+    "bar.html",
+    "submit.html",
+    "images/reddit-mail.svg",
+    "images/reddit-modmail.svg"
   ]
 }
