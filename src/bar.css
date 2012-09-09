@@ -16,7 +16,7 @@ button#save span { background-image:url(/images/savegray.svg); padding-left:16px
 .saved button#save span { background-image:url(/images/save.svg); }
 button#login span { background-image:url(/images/login.svg); }
 
-#bar { display:-webkit-box; color:#222; text-align:left; font-family:sans-serif; border-top-left-radius:5px; border-bottom-left-radius:5px; }
+#bar { display:-webkit-box; color:#222; text-align:left; font-family:sans-serif; border-top-left-radius:5px; border-bottom-left-radius:5px; margin-right:4px; }
 #bar > * { display:-webkit-box; -webkit-box-align:center; vertical-align:middle; }
 #logo { width:19px; -webkit-box-align:stretch; padding:0 7px; text-align:center; background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(0,0,0,.1), rgba(0,0,0,.05)); border-right:1px solid rgba(0,0,0,.1); }
 .liked #logo { background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(255,139,96,.75), rgba(255,139,96,.35)); }
@@ -37,5 +37,5 @@ input#title-input:focus { outline:none; box-shadow:0 0 4px rgba(0,0,0,1); }
 input#title-input::-webkit-input-placeholder { color:#555; }
 
 #close { background:none; padding:0; margin-right:6px; box-shadow:none; border-radius:2px; opacity:.5; }
-#close img { margin-top:3px; }
+#close img { margin-top:3px;}
 #close:hover { opacity:.75; }
