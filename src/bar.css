@@ -37,5 +37,5 @@ input#title-input:focus { outline:none; box-shadow:0 0 4px rgba(0,0,0,1); }
 input#title-input::-webkit-input-placeholder { color:#555; }
 
 #close { background:none; padding:0; margin-right:6px; box-shadow:none; border-radius:2px; opacity:.5; }
-#close img { margin-top:3px; }
+#close img { margin-top:3px; margin-right:4px;}
 #close:hover { opacity:.75; }
