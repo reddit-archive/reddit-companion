@@ -17,7 +17,7 @@ function vote(likes, shift) {
   port.postMessage({action:'vote', likes:info.likes})
   // If closeOnVote set, close unless shift is pressed.
   // If unset, close if shift is pressed.
-  if (!!localStorage['closeOnVote'] != !!shift) {
+  if ((localStorage['closeOnVote'] == 'true') != shift) {
     msgJSON({action:'closeByVote'})
   }
 }
