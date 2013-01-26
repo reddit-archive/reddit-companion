@@ -294,9 +294,9 @@ function addContent(tab, files, callback) {
         throw 'Invalid file extension.'
       }
 
-      inject(tab.id, fileInfo, function() {
-        injectNext()
-      })
+        inject(tab.id, fileInfo, function() {
+          injectNext()
+        })
     } else {
       console.log('Content injection took', Date.now() - startTime, 'ms')
       if (callback) { callback() }
@@ -323,7 +323,7 @@ tabStatus = {
   },
 
   ensureOverlay: function(tab) {
-    var needsOverlay = localStorage['allowHttps'] == 'true' && urlProtocol(tab.url) == 'https'
+    var needsOverlay = (localStorage['allowHttps'] == 'true' && urlProtocol(tab.url) == 'https') || urlProtocol(tab.url) == 'http'
     if (needsOverlay && !(tab.id in this.tabId) && !(tab.id in this.injecting)) {
       this.injecting[tab.id] = true
       addOverlayContent(tab)
