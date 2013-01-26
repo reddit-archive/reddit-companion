@@ -15,11 +15,9 @@ function ShineOverlay(id) {
 ShineOverlay.prototype = {
   init: function() {
     this.frame = document.createElement('iframe')
-    this.frame.setAttribute('style', 'width:100%; height:100%; border:none; display:block !important; left:0; overflow:hidden;')
     this.frame.setAttribute('scrolling', 'no')
     this.frame.setAttribute('frameborder', 'no')
     this.overlay = document.createElement('shinebar')
-    this.overlay.setAttribute('style', 'position:fixed; top:0; left:0; right:0; height:0; display:block; height:30px; background:-webkit-linear-gradient(90deg, rgba(222,222,222,.93), rgba(245,245,245,.93)); border-bottom:1px solid #777; box-shadow:0 2px 1px rgba(100,100,100,.25); z-index:2147483647; overflow:hidden;')
     this.overlay.appendChild(this.frame)
     // document.documentElement.appendChild(this.overlay)
     document.documentElement.insertBefore(this.overlay, document.documentElement.firstChild)
