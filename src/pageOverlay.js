@@ -19,7 +19,8 @@ ShineOverlay.prototype = {
     this.frame.setAttribute('frameborder', 'no')
     this.overlay = document.createElement('shinebar')
     this.overlay.appendChild(this.frame)
-    document.documentElement.appendChild(this.overlay)
+    // document.documentElement.appendChild(this.overlay)
+    document.documentElement.insertBefore(this.overlay, document.documentElement.firstChild)
   },
 
   setHeight: function(height) {
