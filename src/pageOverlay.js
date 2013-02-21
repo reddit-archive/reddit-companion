@@ -17,7 +17,12 @@ ShineOverlay.prototype = {
     this.frame = document.createElement('iframe')
     this.frame.setAttribute('scrolling', 'no')
     this.frame.setAttribute('frameborder', 'no')
+    this.stylesheet = document.createElement('link')
+    this.stylesheet.setAttribute('href', chrome.extension.getURL('pageOverlay.css'))
+    this.stylesheet.setAttribute('type', 'text/css')
+    this.stylesheet.setAttribute('rel', 'stylesheet')
     this.overlay = document.createElement('shinebar')
+    this.overlay.appendChild(this.stylesheet)
     this.overlay.appendChild(this.frame)
     document.documentElement.appendChild(this.overlay)
   },

@@ -31,11 +31,11 @@
     {
       "matches": ["http://*/*"],
       "run_at": "document_start",
-      "js": ["debug.js", "pageOverlay.js"],
-      "css": ["pageOverlay.css"]
+      "js": ["debug.js", "pageOverlay.js"]
     }
   ],
   "web_accessible_resources": [
+    "pageOverlay.css",
     "bar.html",
     "submit.html",
     "images/reddit-mail.svg",
