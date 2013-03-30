@@ -434,7 +434,7 @@ mailChecker = {
 }
 
 function setPageActionIcon(tab) {
-  if (/^http:\/\/.*/.test(tab.url)) {
+  if (/^https?:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
     if (info) {
       chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
