@@ -32,6 +32,7 @@ ShineOverlay.prototype = {
       this.overlay.style.height = height
     }
     document.documentElement.style.marginTop = height
+    document.documentElement.style.position = 'relative'
     this.overlay.style.opacity = height ? 1 : 0
   },
 
@@ -72,6 +73,7 @@ function removeBar() {
     shineBar.remove()
     shineBar = false
     console.log('Shine bar removed.')
+    document.documentElement.style.position = ''
   }
 }
 
