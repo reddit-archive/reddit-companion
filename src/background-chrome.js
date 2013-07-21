@@ -74,89 +74,6 @@ tabStatus = {
   }
 }
 
-barStatus = {
-  fullname: {},
-  hidden: {},
-
-  add: function(port, fullname) {
-    var barData = {port:port, fullname:fullname}
-    console.log('Bar added', barData)
-    if (!this.fullname[fullname]) {
-      this.fullname[fullname] = []
-    }
-    this.fullname[fullname].push(barData)
-    if (this.hidden[barData.fullname]) {
-      delete this.hidden[barData.fullname]
-    }
-    port.onMessage.addListener(this.handleCommand.bind(this, barData))
-    port.onDisconnect.addListener(this.remove.bind(this, barData))
-    tabStatus.addBar(port.sender.tab.id, barData)
-  },
-
-  remove: function(barData) {
-    console.log('Bar removed', barData)
-    var fullname = barData.fullname
-    if (fullname) {
-      var bars = this.fullname[fullname],
-          idx = bars.indexOf(barData)
-      if (~idx) { bars.splice(idx, 1) }
-      if (!bars.length) {
-        delete this.fullname[fullname]
-      }
-    }
-  },
-
-  update: function(barData, stored) {
-    redditInfo.lookupName(barData.fullname, stored, function(info) {
-      if (info == null) { return }
-      console.log('Updating bar', barData)
-      barData.port.postMessage({
-        action: 'update',
-        info: info,
-        loggedIn: redditInfo.isLoggedIn()
-      })
-    }.bind(this))
-  },
-  
-  updateInfo: function(info) {
-    if (this.fullname[info.name]) {
-      this.fullname[info.name].forEach(function(barData) {
-        console.log('Sending updated info to bar', barData, info)
-        barData.port.postMessage({
-          action: 'update',
-          info: info,
-          loggedIn: redditInfo.isLoggedIn()
-        })
-      }, this)
-    }
-  },
-
-  handleCommand: function(barData, msg) {
-    console.log('Received message from bar', barData, msg)
-    var updateAfter = function(success) {
-      if (!success) {
-        this.update.bind(this, barData)
-      }
-    }
-    switch (msg.action) {
-      case 'update':
-        this.update(barData, msg.useStored)
-        break
-      case 'vote':
-        console.log('Voting', msg)
-        redditInfo.vote(barData.fullname, msg.likes, updateAfter)
-        break
-      case 'save':
-      case 'unsave':
-        console.log('Modifying', msg)
-        redditInfo[msg.action](barData.fullname, updateAfter)
-        break
-      case 'close':
-        this.hidden[barData.fullname] = true
-        break
-    }
-  }
-}
 
 function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
@@ -234,7 +151,7 @@ chrome.extension.onConnect.addListener(function(port) {
       }
       break
     case 'bar':
-      barStatus.add(port, data)
+      barStatus.add(port,data,port.sender.tab.id)
       break
   }
 })
