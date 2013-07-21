@@ -13,68 +13,6 @@ function initOptions() {
   }
 }
 
-
-tabStatus = {
-  tabId: {},
-
-  add: function(port) {
-    var tabId = port.sender.tab.id,
-        tabData = {port:port}
-    console.log('Tab added', tabId)
-    this.tabId[tabId] = tabData
-    port.onDisconnect.addListener(this.remove.bind(this, tabId))
-  },
-
-  addBar: function(tabId, bar) {
-    var tabData = this.tabId[tabId]
-    if (tabData) {
-      tabData.bar = bar
-    }
-  },
-
-  remove: function(tabId) {
-    console.log('Tab removed', tabId)
-    var fullname = this.tabId[tabId].fullname
-    delete this.tabId[tabId]
-  },
-
-  send: function(tabId, msg) {
-    var tabData = this.tabId[tabId]
-    if (tabData) {
-      tabData.port.postMessage(msg)
-      return true
-    } else {
-      return false
-    }
-  },
-
-  _showInfo: function(tabId, fullname) {
-    this.send(tabId, {
-      action: 'showInfo',
-      fullname: fullname
-    })
-  },
-  
-  updateTab: function(tabId) {
-    var tabData = this.tabId[tabId]
-    if (tabData && tabData.bar) {
-      console.log('Updating tab', tabId)
-      barStatus.update(tabData.bar)
-    }
-  },
-
-  showInfo: function(tabId, fullname) {
-    this._showInfo(tabId, fullname)
-  },
-
-  showSubmit: function(tabId) {
-    this.send(tabId, {
-      action: 'showSubmit'
-    })
-  }
-}
-
-
 function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
@@ -109,7 +47,7 @@ function onActionClicked(tab) {
     delete workingPageActions[tab.id]
     
     if (info) {
-      tabStatus.showInfo(tab.id, info.name)
+      tabStatus.showInfo(tab.id, info)
     } else {
       tabStatus.showSubmit(tab.id)
     }
@@ -146,7 +84,7 @@ chrome.extension.onConnect.addListener(function(port) {
           console.log('Bar was closed on this page. Ignoring.', info)
         } else {
           console.log('Recognized page '+tab.url, info)
-          tabStatus.showInfo(tab.id, info.name)
+          tabStatus.showInfo(tab.id, info)
         }
       }
       break

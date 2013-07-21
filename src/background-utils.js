@@ -320,7 +320,7 @@ barStatus = {
   add: function(port, fullname,id) {
     //need to iterate to get the atual id for this port....
     var barData = {port:port, fullname:fullname,id:id}
-    console.log('Bar added', barData)
+    console.log('Bar added', barData,port)
     if (!this.fullname[fullname]) {
       this.fullname[fullname] = []
     }
@@ -403,4 +403,101 @@ barStatus = {
         break
     }
   }
+}
+
+tabStatus = {
+  tabId: {},
+
+  add: function(port,url) {
+    var tabId, tabData
+    //need to see if we have this tab yet - if so, simply return that tab id - if not make a new one and add it
+    if(isSafari){
+      tabId = this.searchForID(port);
+      if(!tabId)
+        tabId = _createID();
+    }
+    if(isChrome){
+      tabId = port.sender.tab.id
+    }
+    
+    tabData= {port:port,url:url,id:tabId};
+    this.tabId[tabId] = tabData;
+
+    console.log('Tab added', tabId)
+
+    if(isSafari)
+      port.addEventListener("close", this.remove.bind(this, tabId), false);
+    if(isChrome)
+      port.onDisconnect.addListener(this.remove.bind(this, tabId))
+    
+    return tabId;
+  },
+
+  addBar: function(tabId, bar) {
+    var tabData = this.tabId[tabId]
+    if (tabData) {
+      tabData.bar = bar
+    }
+  },
+
+  remove: function(tabId) {
+    if(this.tabId[tabId]){
+      console.log('Tab removed', tabId)
+      var fullname = this.tabId[tabId].fullname
+      delete this.tabId[tabId]
+    }
+  },
+
+  send: function(tabId, msg) {
+    var tabData = this.tabId[tabId];
+    //console.log(tabId,msg,tabData,this.tabId);
+    if(tabData){
+      if(isSafari)
+        tabData.port.page.dispatchMessage(msg.action,msg);
+      if(isChrome)
+        tabData.port.postMessage(msg)
+      return true;
+    }else{
+      return false;
+    }
+
+  },
+  updateTab: function(tabId) {
+    var tabData = this.tabId[tabId]
+    if (tabData && tabData.bar) {
+      console.log('Updating tab', tabId)
+      barStatus.update(tabData.bar)
+    }
+  },
+
+  _showInfo: function(tabId, info) {
+    var msg;
+    if(isSafari)
+      msg = {id: tabId,action: 'showInfo',info: info};
+    if(isChrome)
+      msg = {action: 'showInfo',fullname: info.name};
+    this.send(tabId,msg );
+  },
+  
+
+  showInfo: function(tabId, info) {
+    this._showInfo(tabId, info)
+  },
+
+  showSubmit: function(tabId) {
+    this.send(tabId, {
+      action: 'showSubmit',
+      id: tabId
+    })
+  },
+
+  searchForID: function(tab){
+    for(var key in this.tabId){
+          if(this.tabId[key].port == tab){
+            return key;
+          }
+      }
+      return false;
+  }
+  
 }
