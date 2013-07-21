@@ -1,5 +1,4 @@
-var port, shineBar
-
+var port, shineBar, id, isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor), isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)
 function once(el, ev, handler, capture) {
   el.addEventListener(ev, function() {
     handler.apply(this, arguments)
@@ -18,7 +17,7 @@ ShineOverlay.prototype = {
     this.frame.setAttribute('scrolling', 'no')
     this.frame.setAttribute('frameborder', 'no')
     this.stylesheet = document.createElement('link')
-    this.stylesheet.setAttribute('href', chrome.extension.getURL('pageOverlay.css'))
+    this.stylesheet.setAttribute('href', getURL('pageOverlay.css'))
     this.stylesheet.setAttribute('type', 'text/css')
     this.stylesheet.setAttribute('rel', 'stylesheet')
     this.overlay = document.createElement('shinebar')
@@ -43,18 +42,30 @@ ShineOverlay.prototype = {
   },
   
   _display: function(url) {
-    this.frame.setAttribute('src', chrome.extension.getURL(url))
+    this.frame.setAttribute('src', getURL(url))
   },
 
   display: function(fullname) {
     if (!this.fullname || this.fullname == fullname) {
       this.fullname = fullname
-      this._display('bar.html#'+encodeURIComponent(fullname))
+      if(isChrome){
+        this._display('bar-chrome.html#'+encodeURIComponent(fullname))
+      }
+      if(isSafari){
+        this._display('bar-safari.html#'+encodeURIComponent(id)+"&"+encodeURIComponent(fullname))
+      }
+      
     }
   },
 
   showSubmit: function() {
-    this._display('submit.html#'+encodeURIComponent(window.location.href))
+    if(isChrome){
+      this._display('submit-chrome.html#'+encodeURIComponent(window.location.href))
+    }
+    if(isSafari){
+      this._display('submit-safari.html#'+encodeURIComponent(window.location.href))
+    }
+    
   }
 }
 
@@ -75,8 +86,16 @@ function removeBar() {
   }
 }
 
+function getURL(url){
+  if(isChrome)
+    return chrome.extension.getURL(url);
+  if(isSafari)
+    return safari.extension.baseURI + url;
+  return null;
+}
+
 window.addEventListener('message', function(e) {
-  if (e.origin == chrome.extension.getURL('').slice(0, -1)) {
+  if (originFromExtension(e.origin)) {
     if (!shineBar) { return }
     var request = JSON.parse(e.data)
     console.log('Message received from bar iframe: ', request)
@@ -91,22 +110,62 @@ window.addEventListener('message', function(e) {
   }
 }, false)
 
-port = chrome.extension.connect({name:'overlay'})
-port.onMessage.addListener(function(request) {
-  switch (request.action) {
-    case 'showInfo':
-      console.log('Shine showInfo received:', request.fullname)
-      createBar().display(request.fullname)
-      break
-    case 'showSubmit':
-      createBar().showSubmit()
-      break
+function originFromExtension(origin){
+  if(isChrome){
+    return origin == chrome.extension.getURL('').slice(0, -1);
   }
-})
+  if(isSafari){
+    return (safari.extension.baseURI.toUpperCase().indexOf(origin.toUpperCase())>=0);
+  }
+  return false;
+}
 
-// Remove any open bars when the extension gets unloaded.
-port.onDisconnect.addListener(function() {
-  removeBar()
-})
+if(isChrome){
+  console.log("Chrome shine page overlay loaded");
+  port = chrome.extension.connect({name:'overlay'})
+  port.onMessage.addListener(function(request) {
+    switch (request.action) {
+      case 'showInfo':
+        console.log('Shine showInfo received:', request.fullname)
+        createBar().display(request.fullname)
+        break
+      case 'showSubmit':
+        createBar().showSubmit()
+        break
+    }
+  })
 
-console.log('Shine page overlay loaded.')
+  // Remove any open bars when the extension gets unloaded.
+  port.onDisconnect.addListener(function() {
+    removeBar()
+  })
+}
+
+if(isSafari){
+  if(window.top === window){
+    DEBUG = false
+    if (!DEBUG) {
+      console.log = function(){}
+    }
+    console.log("Safari shine page overlay loaded.");
+    safari.self.addEventListener("message",function(messageEvent) {
+    var result = messageEvent.message;
+    //console.log("Received message",messageEvent);
+      switch (messageEvent.name) {
+        case 'showInfo':
+            if(!id)
+              id = result.id;
+            info = result.info;
+            createBar().display(info.name);
+          break;
+        case 'showSubmit':
+          if(!id)
+              id = result.id;
+          createBar().showSubmit()
+          break
+      }
+    },false);
+    safari.self.tab.dispatchMessage("connect",{url:window.location.href});
+  }
+
+}

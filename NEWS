@@ -1,3 +1,9 @@
+== Safari Version 1.0.0 ==
+* Initial public version
+
+== Chrome Version 1.1.3 ==
+* Updated to merge safari & chrome code
+
 == Version 1.1.2 ==
 * Fix display issue on image pages.
 

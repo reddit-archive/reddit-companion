@@ -1,6 +1,7 @@
 # reddit companion
 
-reddit companion is a Chrome extension that integrates reddit into the browser.
+reddit companion is a Chrome and Safari extension that integrates reddit into 
+the browser.
 
 ![logo](https://github.com/chromakode/shine/raw/master/src/images/shine-48.png)
 
@@ -25,3 +26,9 @@ reddit submit page with the title filled in.
 Incoming messages are checked for every 5 minutes. When a new message arrives, 
 a desktop notification is displayed containing a preview of the message. 
 Clicking on the message opens the reddit inbox.
+
+## known issues
+
+* SVG images don't work the same in safari and chrome extensions so the html
+and css files are separate
+* Safari can't include debug so it's debug is set in separate location
