@@ -16,7 +16,7 @@
     "128" : "images/shine-128.png"
   },
   "background" : {
-    "page": "background.html"
+    "page": "background-chrome.html"
   },
   "page_action": {
     "default_icon": "images/reddit.png",
