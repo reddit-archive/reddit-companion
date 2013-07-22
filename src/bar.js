@@ -1,4 +1,4 @@
-var port, fullname, info, loggedIn
+var port, fullname, info, loggedIn, id, isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor), isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor)
 
 function likeDelta(likes) {
   if (likes == true) {
@@ -14,16 +14,16 @@ function vote(likes) {
   info.score += likeDelta(likes) - likeDelta(info.likes)
   info.likes = likes
   update()
-  port.postMessage({action:'vote', likes:info.likes})
+  sendMessage({action:'vote', likes:info.likes})
 }
 
 function toggleSaved() {
   info.saved = !info.saved
   update()
   if (info.saved) {
-    port.postMessage({action:'save'})
+    sendMessage({action:'save'})
   } else {
-    port.postMessage({action:'unsave'})
+    sendMessage({action:'unsave'})
   }
 }
 
@@ -61,7 +61,7 @@ function update() {
     $('#save').attr('title', info.saved ? 'Unsave' : 'Save')
   }
 
-  $('#score').text(info.score)
+  $('#score').html((info.score)?info.score:'&#149;')
   if (info.subreddit) {
     var subPath = '/r/'+info.subreddit
     $('#subreddit')
@@ -94,12 +94,23 @@ function initButtons() {
   })
 
   $('#close').click(function() {
-    port.postMessage({action:'close'})
+    sendMessage({action:'close'})
     msgJSON({action:'close'})
   })
 
   buttonsReady = true
 }
+
+function sendMessage(action){
+  if(isChrome)
+    port.postMessage(action)
+  if(isSafari){
+    action.id=id;
+    safari.self.tab.dispatchMessage("bar",action);
+  }
+}
+
+
 
 $(document).ready(function() {
   if (localStorage['showTooltips'] == 'false') {
@@ -109,16 +120,40 @@ $(document).ready(function() {
 })
 
 buttonsReady = false
-fullname = window.location.hash.substr(1)
-port = chrome.extension.connect({name:'bar:'+fullname})
-port.onMessage.addListener(function(msg) {
-  switch (msg.action) {
-    case 'update':
-      console.log('Received updated info', msg)
-      info = msg.info
-      loggedIn = msg.loggedIn
-      update()
-      break
-  }
-})
-port.postMessage({action:'update', useStored:'true'})
+if(isChrome){
+  fullname = window.location.hash.substr(1)
+  port = chrome.extension.connect({name:'bar:'+fullname})
+  port.onMessage.addListener(function(msg) {
+    switch (msg.action) {
+      case 'update':
+        console.log('Received updated info', msg)
+        info = msg.info
+        loggedIn = msg.loggedIn
+        update()
+        break
+    }
+  })
+  port.postMessage({action:'update', useStored:'true'})
+}
+
+if(isSafari){
+  temploc = window.location.hash.substr(1).split("&");
+  id=temploc[0];
+  fullname=temploc[1];
+  safari.self.addEventListener("message",function(messageEvent) {
+  var result = messageEvent.message;
+
+    switch (messageEvent.name) {
+      case 'update':
+          info = result.info
+          console.log("Received Update",info);
+          loggedIn = result.loggedIn
+          update()
+        break;
+      
+    }
+  },false);
+//send the update message with id to background
+  safari.self.tab.dispatchMessage("bar",{action:'connect',fullname:fullname,id:id});
+}
+
