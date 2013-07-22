@@ -1,6 +1,6 @@
 {
   "name": "reddit companion",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "manifest_version": 2,
   "description": "Turn your browser into a redditor's best friend.",
   "options_page": "options.html",
@@ -16,7 +16,7 @@
     "128" : "images/shine-128.png"
   },
   "background" : {
-    "page": "background.html"
+    "page": "background-chrome.html"
   },
   "page_action": {
     "default_icon": "images/reddit.png",
@@ -36,8 +36,8 @@
   ],
   "web_accessible_resources": [
     "pageOverlay.css",
-    "bar.html",
-    "submit.html",
+    "bar-chrome.html",
+    "submit-chrome.html",
     "images/reddit-mail.svg",
     "images/reddit-modmail.svg"
   ]

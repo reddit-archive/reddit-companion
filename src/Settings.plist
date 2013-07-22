@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>Title</key>
+		<string>Companion Bar</string>
+		<key>Type</key>
+		<string>Group</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>autoShow</string>
+		<key>Title</key>
+		<string>auto show from reddit</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>autoShowSelf</string>
+		<key>Title</key>
+		<string>auto show on self posts</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>showTooltips</string>
+		<key>Title</key>
+		<string>show button tooltips</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>Reddit Notifications</string>
+		<key>Type</key>
+		<string>Group</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>checkMail</string>
+		<key>Title</key>
+		<string>check for new messages</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+</array>
+</plist>
