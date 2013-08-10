@@ -2,7 +2,7 @@ body { margin:0; font-family:helvetica neue, helvetica, sans-serif; font-weight:
 
 a.button { display:inline-block; text-decoration:none; font:-webkit-small-control; cursor:default; }
 button, a.button, .liked button#upvote:active, .disliked button#downvote:active, .saved button#save:active { box-sizing:border-box; vertical-align:middle; margin:5px 2px; padding:10px; background:-webkit-linear-gradient(90deg, #222, #333); border:none; color:#fff; }
-button:active, a.button:active, .liked button#upvote, .disliked button#downvote, .saved button#save { background:-webkit-linear-gradient(90deg, #333, #222); }
+button:active, a.button:active, .liked button#upvote, .disliked button#downvote, .saved button#save { background:-webkit-linear-gradient(90deg, #333, #222); outline: 0; }
 .liked button#upvote { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #FF8B60; }
 .disliked button#downvote { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #857DFF; }
 .saved button#save { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #E9A10C; }
