@@ -1,11 +1,11 @@
-body { margin:0; font-family:sans-serif; -webkit-user-select:none; width:100%; }
+body { margin:0; font-family:helvetica neue, helvetica, sans-serif; font-weight: 200; -webkit-user-select:none; width:100%; }
 
-a.button { display:inline-block; text-decoration:none; font:-webkit-small-control; color:#222; cursor:default; }
-button, a.button, .liked button#upvote:active, .disliked button#downvote:active, .saved button#save:active { box-sizing:border-box; height:20px; vertical-align:middle; margin:5px 2px; padding:2px 6px; border-radius:5px; background:-webkit-linear-gradient(90deg, #ddd, #fff); border:none; box-shadow:0 0 3px rgba(0,0,0,.75); }
-button:active, a.button:active, .liked button#upvote, .disliked button#downvote, .saved button#save { background:-webkit-linear-gradient(90deg, #eee, #ddd); box-shadow:0 0 5px rgba(0,0,0,1); }
-.liked button#upvote { box-shadow:0 0 3px rgba(0,0,0,.75), 0 0 4px 1px #FF8B60; }
-.disliked button#downvote { box-shadow:0 0 3px rgba(0,0,0,.75), 0 0 4px 1px #857DFF; }
-.saved button#save { box-shadow:0 0 3px rgba(0,0,0,.75), 0 0 4px 1px #E9A10C; }
+a.button { display:inline-block; text-decoration:none; font:-webkit-small-control; cursor:default; }
+button, a.button, .liked button#upvote:active, .disliked button#downvote:active, .saved button#save:active { box-sizing:border-box; vertical-align:middle; margin:5px 2px; padding:10px; background:-webkit-linear-gradient(90deg, #222, #333); border:none; color:#fff; }
+button:active, a.button:active, .liked button#upvote, .disliked button#downvote, .saved button#save { background:-webkit-linear-gradient(90deg, #333, #222); outline: 0; }
+.liked button#upvote { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #FF8B60; }
+.disliked button#downvote { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #857DFF; }
+.saved button#save { box-shadow:/*0 0 3px rgba(0,0,0,.75), */0 0 1px 1px #E9A10C; }
 button > span, .button > span { display:inline-block; height:16px; line-height:16px; background-position:left center; background-repeat:no-repeat; padding-left:18px; }
 button#upvote span { background-image:url(/images/upgray.svg); }
 .liked button#upvote span { background-image:url(/images/upmod.svg); }
@@ -16,23 +16,23 @@ button#save span { background-image:url(/images/savegray.svg); padding-left:16px
 .saved button#save span { background-image:url(/images/save.svg); }
 button#login span { background-image:url(/images/login.svg); }
 
-#bar { display:-webkit-box; width:9999px; color:#222; text-align:left; font-family:sans-serif; border-top-left-radius:5px; border-bottom-left-radius:5px; }
+#bar { display:-webkit-box; width:9999px; color:#222; text-align:left; font-family:helvetica neue, helvetica, sans-serif; border-top-left-radius:5px; border-bottom-left-radius:5px; }
 #bar > * { display:-webkit-box; -webkit-box-align:center; vertical-align:middle; }
 #logo { width:19px; -webkit-box-align:stretch; padding:0 7px; text-align:center; background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(0,0,0,.1), rgba(0,0,0,.05)); border-right:1px solid rgba(0,0,0,.1); }
-.liked #logo { background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(255,139,96,.75), rgba(255,139,96,.35)); }
-.disliked #logo { background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(148,148,255,.75), rgba(148,148,255,.35)); }
+.liked #logo { background:rgb(255,139,96) url(/images/reddit.svg) no-repeat center center; }
+.disliked #logo { background:rgb(148,148,255) url(/images/reddit.svg) no-repeat center center; }
 #buttons { white-space:nowrap; }
-#score { padding:0 10px; font-weight:bold; color:#969696; border-left:1px solid rgba(255,255,255,.65); -webkit-transition-property:color; -webkit-transition-duration:.15s; }
+#score { padding:0 10px; font-weight:100; color:#969696; -webkit-transition-property:color; -webkit-transition-duration:.15s; font-size: 28px; }
 .liked #score { color:#FF8B60; }
 .disliked #score { color:#9494FF; }
-#title { padding:2px 10px 2px 0; color:#222; text-decoration:none; -webkit-user-select:text; -webkit-box-flex:1; }
-#subreddit { font-size:.9em; color:black; padding:0 10px 0 5px; opacity:.5; }
+#title { padding:2px 10px 2px 0; color:rgba(255,255,255,.95); text-decoration:none; -webkit-user-select:text; -webkit-box-flex:1; font-size: 16px; line-height: 1; }
+#subreddit { font-size:.7em; color:rgba(255,255,255,.5); padding:0 10px 0 5px; text-transform: uppercase; text-decoration: none; }
 
 .logged-out .if-logged-in { display:none; }
 .logged-in .if-not-logged-in { display:none; }
 
 .button#submit span { background-image:url(/images/submit.svg); background-position:right center; background-repeat:no-repeat; padding-left:0; padding-right:18px; }
-input#title-input { -webkit-box-flex:1; background:-webkit-gradient(linear, left bottom, left top, color-stop(0, rgba(255,255,255,.7)), color-stop(.5, rgba(255,255,255,.8))); border:none; box-shadow:0 0 3px rgba(0,0,0,.75); padding:2px; margin:5px; border-radius:5px; }
+input#title-input { -webkit-box-flex:1; background:rgba(255,255,255,.9); border:none; padding:8px; margin:5px; font-size: 16px; }
 input#title-input:focus { outline:none; box-shadow:0 0 4px rgba(0,0,0,1); }
 input#title-input::-webkit-input-placeholder { color:#555; }
 
