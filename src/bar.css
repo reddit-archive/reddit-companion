@@ -19,8 +19,8 @@ button#login span { background-image:url(/images/login.svg); }
 #bar { display:-webkit-box; width:9999px; color:#222; text-align:left; font-family:helvetica neue, helvetica, sans-serif; border-top-left-radius:5px; border-bottom-left-radius:5px; }
 #bar > * { display:-webkit-box; -webkit-box-align:center; vertical-align:middle; }
 #logo { width:19px; -webkit-box-align:stretch; padding:0 7px; text-align:center; background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(0,0,0,.1), rgba(0,0,0,.05)); border-right:1px solid rgba(0,0,0,.1); }
-.liked #logo { background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(255,139,96,.75), rgba(255,139,96,.35)); }
-.disliked #logo { background:url(/images/reddit.svg) no-repeat center center, -webkit-linear-gradient(90deg, rgba(148,148,255,.75), rgba(148,148,255,.35)); }
+.liked #logo { background:rgb(255,139,96) url(/images/reddit.svg) no-repeat center center; }
+.disliked #logo { background:rgb(148,148,255) url(/images/reddit.svg) no-repeat center center; }
 #buttons { white-space:nowrap; }
 #score { padding:0 10px; font-weight:100; color:#969696; -webkit-transition-property:color; -webkit-transition-duration:.15s; font-size: 28px; }
 .liked #score { color:#FF8B60; }
