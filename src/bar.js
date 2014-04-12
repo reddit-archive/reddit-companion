@@ -63,10 +63,10 @@ function update() {
 
   $('#score').text(info.score)
   if (info.subreddit) {
-    var subPath = '/r/'+info.subreddit
+    console.log(info.subreddit);
     $('#subreddit')
-      .text(subPath)
-      .attr('href', 'http://www.reddit.com'+subPath)
+      .text(info.subreddit)
+      .attr('href', 'http://www.reddit.com'+info.subreddit)
   } else {
     $('#bar').removeClass('subreddit')
   }
