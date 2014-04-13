@@ -61,9 +61,8 @@ function update() {
     $('#save').attr('title', info.saved ? 'Unsave' : 'Save')
   }
 
-  $('#score').text(info.score)
+  $('#score').text(info.score ? info.score : '?')
   if (info.subreddit) {
-    console.log(info.subreddit);
     $('#subreddit')
       .text(info.subreddit)
       .attr('href', 'http://www.reddit.com'+info.subreddit)
