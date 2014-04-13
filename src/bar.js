@@ -61,12 +61,11 @@ function update() {
     $('#save').attr('title', info.saved ? 'Unsave' : 'Save')
   }
 
-  $('#score').text(info.score)
+  $('#score').text(info.score ? info.score : '?')
   if (info.subreddit) {
-    var subPath = '/r/'+info.subreddit
     $('#subreddit')
-      .text(subPath)
-      .attr('href', 'http://www.reddit.com'+subPath)
+      .text(info.subreddit)
+      .attr('href', 'http://www.reddit.com'+info.subreddit)
   } else {
     $('#bar').removeClass('subreddit')
   }
