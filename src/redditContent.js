@@ -26,7 +26,7 @@ function scrapeThingInfo(thing) {
 
   info.score = parseInt(thing.querySelector('.score'+scoreClass).innerText)
   
-  info.subreddit = (thing.querySelector('a.subreddit') || document.querySelector('.redditname > a')).innerText
+  info.subreddit = (thing.querySelector('a.subreddit') || document.querySelector('.redditname > a')).innerText.replace('/r/','')
 
   info.num_comments = parseInt(thing.querySelector('.comments').innerText) || 0
 
