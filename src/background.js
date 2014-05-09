@@ -14,7 +14,7 @@ function initOptions() {
 }
 
 redditInfo = {
-  freshAgeThreshold: 5*60,
+  freshAgeThreshold: 5 * 60,
 
   url: {},
   fullname: {
@@ -31,7 +31,7 @@ redditInfo = {
   getURL: function(url) {
     return this.url[url]
   },
-  
+
   setURL: function(url, info) {
     info._ts = info._ts || Date.now()
     var stored = this.fullname[info.name]
@@ -45,7 +45,9 @@ redditInfo = {
   },
 
   request: function(options) {
-    if (!options.data) { options.data = {} }
+    if (!options.data) {
+      options.data = {}
+    }
     options.data['app'] = 'shine'
     $.ajax(options)
   },
@@ -57,10 +59,14 @@ redditInfo = {
         if (resp.data) {
           console.log('Updated reddit user data', resp.data)
           this.storeModhash(resp.data.modhash)
-          if (callback) { callback(resp.data) }
+          if (callback) {
+            callback(resp.data)
+          }
         }
       }.bind(this),
-      error: function() { callback(false) }
+      error: function() {
+        callback(false)
+      }
     })
   },
 
@@ -72,7 +78,9 @@ redditInfo = {
           callback(resp.data.children)
         }
       },
-      error: function() { callback(false) }
+      error: function() {
+        callback(false)
+      }
     })
   },
 
@@ -97,10 +105,12 @@ redditInfo = {
           callback(false, resp)
         }
       }.bind(this),
-      error: function() { callback(false) }
+      error: function() {
+        callback(false)
+      }
     })
   },
-  
+
   _storedLookup: function(keyName, key, array, useStored, callback) {
     // Internal rate limited cached info getter.
     //
@@ -111,38 +121,42 @@ redditInfo = {
     // the data is fetched from reddit and `callback` is invoked with the
     // result.
     var stored = array[key],
-        storedAge = 0,
-        now = Date.now()
-    if (stored) {
-      if (useStored) {
-        // Return our stored data right away.
-        callback(stored)
+      storedAge = 0,
+      now = Date.now()
+      if (stored) {
+        if (useStored) {
+          // Return our stored data right away.
+          callback(stored)
+        }
+
+        if (stored._fake) {
+          console.log('Skipping fake info request.')
+          return false
+        }
+
+        if (this.fetching[stored.name]) {
+          console.log('Info already being fetched. Skipping update.', stored)
+          return false
+        }
+
+        storedAge = Math.floor((now - stored._ts) / 1000)
+        if (storedAge < redditInfo.freshAgeThreshold) {
+          console.log('Info is', storedAge, 'seconds old. Skipping update.', stored)
+          return false
+        }
+
+        // Mark that we are fetching the data from reddit
+        this.fetching[stored.name] = true
       }
 
-      if (stored._fake) {
-        console.log('Skipping fake info request.')
-        return false
-      }
-
-      if (this.fetching[stored.name]) {
-        console.log('Info already being fetched. Skipping update.', stored)
-        return false
-      }
-    
-      storedAge = Math.floor((now - stored._ts) / 1000)
-      if (storedAge < redditInfo.freshAgeThreshold) {
-        console.log('Info is', storedAge, 'seconds old. Skipping update.', stored)
-        return false
-      }
-
-      // Mark that we are fetching the data from reddit
-      this.fetching[stored.name] = true
+    var queryParams = {
+      age: storedAge
     }
-
-    var queryParams = {age:storedAge}
     queryParams[keyName] = key
     this._queryInfo(queryParams, function() {
-      if (stored) { delete this.fetching[stored.name] }
+      if (stored) {
+        delete this.fetching[stored.name]
+      }
       callback.apply(null, arguments)
     }.bind(this))
     return true
@@ -157,15 +171,21 @@ redditInfo = {
   },
 
   _thingAction: function(action, data, callback) {
-    if (!this.isLoggedIn()) { callback(false, 'not logged in') }
-    
+    if (!this.isLoggedIn()) {
+      callback(false, 'not logged in')
+    }
+
     data.uh = this.modhash
     this.request({
       type: 'POST',
-      url: 'http://www.reddit.com/api/'+action,
+      url: 'http://www.reddit.com/api/' + action,
       data: data,
-      success: function(resp) { callback(true) },
-      error: function() { callback(false) }
+      success: function(resp) {
+        callback(true)
+      },
+      error: function() {
+        callback(false)
+      }
     })
   },
 
@@ -178,18 +198,25 @@ redditInfo = {
     } else {
       dir = 0
     }
-    
-    this._thingAction('vote', {id:fullname, dir:dir}, callback)
+
+    this._thingAction('vote', {
+      id: fullname,
+      dir: dir
+    }, callback)
   },
 
   save: function(fullname, callback) {
-    this._thingAction('save', {id:fullname}, callback)
+    this._thingAction('save', {
+      id: fullname
+    }, callback)
   },
 
   unsave: function(fullname, callback) {
-    this._thingAction('unsave', {id:fullname}, callback)
+    this._thingAction('unsave', {
+      id: fullname
+    }, callback)
   },
-  
+
   isLoggedIn: function() {
     // TODO: check for cookie
     return this.modhash != null && this.modhash != ''
@@ -198,7 +225,7 @@ redditInfo = {
   init: function() {
     this.modhash = localStorage['modhash']
   },
-    
+
   storeModhash: function(modhash) {
     localStorage['modhash'] = this.modhash = modhash
   }
@@ -209,7 +236,9 @@ tabStatus = {
 
   add: function(port) {
     var tabId = port.sender.tab.id,
-        tabData = {port:port}
+      tabData = {
+        port: port
+      }
     console.log('Tab added', tabId)
     this.tabId[tabId] = tabData
     port.onDisconnect.addListener(this.remove.bind(this, tabId))
@@ -244,7 +273,7 @@ tabStatus = {
       fullname: fullname
     })
   },
-  
+
   updateTab: function(tabId) {
     var tabData = this.tabId[tabId]
     if (tabData && tabData.bar) {
@@ -269,7 +298,10 @@ barStatus = {
   hidden: {},
 
   add: function(port, fullname) {
-    var barData = {port:port, fullname:fullname}
+    var barData = {
+      port: port,
+      fullname: fullname
+    }
     console.log('Bar added', barData)
     if (!this.fullname[fullname]) {
       this.fullname[fullname] = []
@@ -288,8 +320,10 @@ barStatus = {
     var fullname = barData.fullname
     if (fullname) {
       var bars = this.fullname[fullname],
-          idx = bars.indexOf(barData)
-      if (~idx) { bars.splice(idx, 1) }
+        idx = bars.indexOf(barData)
+        if (~idx) {
+          bars.splice(idx, 1)
+        }
       if (!bars.length) {
         delete this.fullname[fullname]
       }
@@ -298,7 +332,9 @@ barStatus = {
 
   update: function(barData, stored) {
     redditInfo.lookupName(barData.fullname, stored, function(info) {
-      if (info == null) { return }
+      if (info == null) {
+        return
+      }
       console.log('Updating bar', barData)
       barData.port.postMessage({
         action: 'update',
@@ -307,7 +343,7 @@ barStatus = {
       })
     }.bind(this))
   },
-  
+
   updateInfo: function(info) {
     if (this.fullname[info.name]) {
       this.fullname[info.name].forEach(function(barData) {
@@ -352,13 +388,15 @@ mailNotifier = {
   lastSeen: null,
   notify: function(messages) {
     var newIdx = null,
-        lastSeen = this.lastSeen,
-        newCount = 0
+      lastSeen = this.lastSeen,
+      newCount = 0
     for (i = 0; i < messages.length; i++) {
-      var messageTime = messages[i].data.created_utc*1000
+      var messageTime = messages[i].data.created_utc * 1000
       if (!lastSeen || messageTime > lastSeen) {
         newCount++
-        if (!newIdx) { newIdx = i }
+        if (!newIdx) {
+          newIdx = i
+        }
         this.lastSeen = Math.max(this.lastSeen, messageTime)
       }
     }
@@ -405,7 +443,7 @@ mailNotifier = {
 }
 
 mailChecker = {
-  checkInterval: 5*60*1000,
+  checkInterval: 5 * 60 * 1000,
 
   interval: null,
   start: function() {
@@ -437,9 +475,15 @@ function setPageActionIcon(tab) {
   if (/^http:\/\/.*/.test(tab.url)) {
     var info = redditInfo.getURL(tab.url)
     if (info) {
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit.png'})
-    } else { 
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/reddit-inactive.png'})
+      chrome.pageAction.setIcon({
+        tabId: tab.id,
+        path: '/images/reddit.png'
+      })
+    } else {
+      chrome.pageAction.setIcon({
+        tabId: tab.id,
+        path: '/images/reddit-inactive.png'
+      })
     }
     chrome.pageAction.show(tab.id)
     return info
@@ -447,32 +491,38 @@ function setPageActionIcon(tab) {
 }
 
 var workingPageActions = {}
-function onActionClicked(tab) {
-  if (tab.id in workingPageActions) { return }
-  workingPageActions[tab.id] = true
 
-  var frame = 0
-  var workingAnimation = window.setInterval(function() {
-    try {
-      chrome.pageAction.setIcon({tabId:tab.id, path:'/images/working'+frame+'.png'})
-    } catch (exc) {
-      window.clearInterval(arguments.callee)
+  function onActionClicked(tab) {
+    if (tab.id in workingPageActions) {
+      return
     }
-    frame = (frame + 1) % 6
-  }, 200)
-  
-  redditInfo.lookupURL(tab.url, true, function(info) {
-    window.clearInterval(workingAnimation)
-    setPageActionIcon(tab)
-    delete workingPageActions[tab.id]
-    
-    if (info) {
-      tabStatus.showInfo(tab.id, info.name)
-    } else {
-      tabStatus.showSubmit(tab.id)
-    }
-  })
-}
+    workingPageActions[tab.id] = true
+
+    var frame = 0
+    var workingAnimation = window.setInterval(function() {
+      try {
+        chrome.pageAction.setIcon({
+          tabId: tab.id,
+          path: '/images/working' + frame + '.png'
+        })
+      } catch (exc) {
+        window.clearInterval(arguments.callee)
+      }
+      frame = (frame + 1) % 6
+    }, 200)
+
+    redditInfo.lookupURL(tab.url, true, function(info) {
+      window.clearInterval(workingAnimation)
+      setPageActionIcon(tab)
+      delete workingPageActions[tab.id]
+
+      if (info) {
+        tabStatus.showInfo(tab.id, info.name)
+      } else {
+        tabStatus.showSubmit(tab.id)
+      }
+    })
+  }
 
 chrome.tabs.onSelectionChanged.addListener(tabStatus.updateTab.bind(tabStatus))
 chrome.pageAction.onClicked.addListener(onActionClicked)
@@ -494,19 +544,19 @@ chrome.extension.onConnect.addListener(function(port) {
     case 'overlay':
       tabStatus.add(port)
       var tab = port.sender.tab,
-          info = setPageActionIcon(tab)
-      if (info) {
-        if (localStorage['autoShow'] == 'false') {
-          console.log('Auto-show disabled. Ignoring reddit page', info)
-        } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
-          console.log('Ignoring self post', info)
-        } else if (barStatus.hidden[info.name]) {
-          console.log('Bar was closed on this page. Ignoring.', info)
-        } else {
-          console.log('Recognized page '+tab.url, info)
-          tabStatus.showInfo(tab.id, info.name)
+        info = setPageActionIcon(tab)
+        if (info) {
+          if (localStorage['autoShow'] == 'false') {
+            console.log('Auto-show disabled. Ignoring reddit page', info)
+          } else if (localStorage['autoShowSelf'] == 'false' && info.is_self) {
+            console.log('Ignoring self post', info)
+          } else if (barStatus.hidden[info.name]) {
+            console.log('Bar was closed on this page. Ignoring.', info)
+          } else {
+            console.log('Recognized page ' + tab.url, info)
+            tabStatus.showInfo(tab.id, info.name)
+          }
         }
-      }
       break
     case 'bar':
       barStatus.add(port, data)
@@ -525,7 +575,9 @@ window.addEventListener('storage', function(e) {
 }, false)
 
 // Show page action for existing tabs.
-chrome.windows.getAll({populate:true}, function(wins) {
+chrome.windows.getAll({
+  populate: true
+}, function(wins) {
   wins.forEach(function(win) {
     win.tabs.forEach(function(tab) {
       setPageActionIcon(tab)
