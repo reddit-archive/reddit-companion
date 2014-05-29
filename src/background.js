@@ -348,9 +348,19 @@ barStatus = {
   }
 }
 
-mailNotifier = {
+notifier = {
   lastSeen: null,
-  notify: function(messages) {
+  //Easier option palcement for future tinkering and adjustments
+  notifyName: null,
+  notifyExists: null,
+  notifyOptions: {
+    type: 'basic',
+    title: null,
+    message: null,
+    iconUrl: '/images/reddit-mail.svg'
+  },
+
+  notifyNewMail: function(messages) { //drives notifications
     var newIdx = null,
         lastSeen = this.lastSeen,
         newCount = 0
@@ -374,35 +384,56 @@ mailNotifier = {
       title = 'reddit: new messages!'
       text = 'You have ' + messages.length + ' new messages.'
     }
+    //Assign strings and call notification
+    this.notifyOptions.title = title;
+    this.notifyOptions.message = text;
+    this.notifyName = "redditCompanionMail"
 
     if (newCount > 0) {
-      this.showNotification(title, text)
+      this.notifyShow(this.notifyOptions, this.notifyName);
     }
   },
 
-  clear: function() {
-    if (this.notification) {
-      this.notification.cancel()
+  notifyClear: function(noteID) { //Clears notifications after verifying they exist
+    chrome.notifications.getAll(verifyExists.bind(this));
+
+    function verifyExists(noteList) { //Checks for existence and clears if it is there
+      this.notifyExists = (noteList[this.notifyName]);
+      if (this.notifyExists) {
+        chrome.notifications.clear(noteID, cleanup.bind(this));
+        console.log("cleared notification")
+      }
+    };
+
+    function cleanup(isCleared) { //can be used for future cleanup needs upon notification being cleared
+      if (isCleared) {
+        console.log("cleanup finished")
+      }
     }
   },
 
-  notification: null,
-  showNotification: function(title, text) {
-    if (this.notification) {
-      this.notification.cancel()
+  notifyClick: function(noteID) { //opens up unread mail and clears the notification
+    window.open('http://www.reddit.com/message/unread/')
+    this.notifyClear(noteID);
+  },
+
+  notifyShow: function(options, noteID) { //creates the notification
+    this.notifyClear(this.notifyName);
+    chrome.notifications.create(noteID, options, createNotifyHandles.bind(this));
+
+    function createNotifyHandles(noteID) { //adds handlers at the time of notification creation
+      console.log("Successfully created " + noteID + " notification panel");
+      if (!chrome.notifications.onClosed.hasListeners()) { //do not duplicate listeners
+        chrome.notifications.onClosed.addListener(this.notifyClear.bind(this));
+        console.log("onClosed listener added?: " + chrome.notifications.onClosed.hasListeners());
+      }
+      if (!chrome.notifications.onClicked.hasListeners()) { //do not duplicate listeners
+        chrome.notifications.onClicked.addListener(this.notifyClick.bind(this));
+        console.log("onClicked listener added?: " + chrome.notifications.onClicked.hasListeners());
+      }
     }
-
-    var n = this.notification =
-      webkitNotifications.createNotification('images/reddit-mail.svg', title, text)
-
-    this.notification.onclick = function() {
-      window.open('http://www.reddit.com/message/unread/')
-      n.cancel()
-    }
-
-    this.notification.show()
   }
-}
+};
 
 mailChecker = {
   checkInterval: 5*60*1000,
@@ -424,11 +455,7 @@ mailChecker = {
   },
   check: function() {
     redditInfo.update(function(info) {
-      if (info.has_mail) {
-        redditInfo.fetchMail(mailNotifier.notify.bind(mailNotifier))
-      } else {
-        mailNotifier.clear()
-      }
+      if (info.has_mail) {redditInfo.fetchMail(notifier.notifyNewMail.bind(notifier))}
     })
   }
 }
