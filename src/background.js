@@ -381,26 +381,23 @@ mailNotifier = {
   },
 
   clear: function() {
-    if (this.notification) {
-      this.notification.cancel()
-    }
+    chrome.notifications.getAll(function (noteIdArray){
+      var noteIds = Object.keys(noteIdArray)
+      if (noteIds.length > 0){
+        noteIds.forEach(function(note){chrome.notifications.clear(note,function(){})})
+      }
+    })
   },
 
   notification: null,
   showNotification: function(title, text) {
-    if (this.notification) {
-      this.notification.cancel()
-    }
-
-    var n = this.notification =
-      webkitNotifications.createNotification('images/reddit-mail.svg', title, text)
-
-    this.notification.onclick = function() {
-      window.open('http://www.reddit.com/message/unread/')
-      n.cancel()
-    }
-
-    this.notification.show()
+    this.clear()
+    chrome.notifications.create('',{type:'basic',title:title, message:text, iconUrl:'/images/reddit-mail.svg'},function (noteId){
+      chrome.notifications.onClicked.addListener(function (){
+        window.open('http://www.reddit.com/message/unread/')
+        chrome.notifications.clear(noteId,function(){})
+      })
+    })
   }
 }
 
