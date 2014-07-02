@@ -381,26 +381,25 @@ mailNotifier = {
   },
 
   clear: function() {
-    if (this.notification) {
-      this.notification.cancel()
+    if (this.notification != ''){
+      chrome.notifications.clear(this.notification,function(){})
+      this.notification = ''
     }
   },
 
-  notification: null,
+  notification: '',
   showNotification: function(title, text) {
-    if (this.notification) {
-      this.notification.cancel()
-    }
-
-    var n = this.notification =
-      webkitNotifications.createNotification('images/reddit-mail.svg', title, text)
-
-    this.notification.onclick = function() {
-      window.open('http://www.reddit.com/message/unread/')
-      n.cancel()
-    }
-
-    this.notification.show()
+    var n = this
+    n.clear()
+    chrome.notifications.create(n.notification,{type:'basic',title:title, message:text, iconUrl:'/images/reddit-mail.svg'},function (noteId){
+      n.notification = noteId
+      if(!chrome.notifications.onClicked.hasListeners()){
+        chrome.notifications.onClicked.addListener(function (){
+          window.open('http://www.reddit.com/message/unread/')
+          n.clear()
+        }
+      )}
+    })
   }
 }
 
