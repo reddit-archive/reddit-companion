@@ -63,7 +63,7 @@ function update() {
 
   $('#score').text(info.score)
   if (info.subreddit) {
-    var subPath = '/r/'+info.subreddit
+    var subPath = info.subreddit
     $('#subreddit')
       .text(subPath)
       .attr('href', 'http://www.reddit.com'+subPath)
